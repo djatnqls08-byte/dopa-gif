@@ -2,275 +2,263 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DOPA 감성 움직이는 페어틀 생성기</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>움짤 페어틀 메이커</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- gifshot (무료 클라이언트 인코더) -->
+  <!-- gifshot (100% 클라이언트 GIF 인코더) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gifshot/0.3.2/gifshot.min.js"></script>
-  <!-- Pretendard 폰트 -->
+  <!-- 감성 서체 Pretendard -->
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
   <style>
-    body { font-family: "Pretendard", -apple-system, BlinkMacSystemFont, sans-serif; }
-    /* 도파 특유의 모눈종이 그리드 배경 효과 */
-    .dopa-grid {
-      background-size: 24px 24px;
-      background-image: 
-        linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-    }
+    body { font-family: "Pretendard", -apple-system, BlinkMacSystemFont, sans-serif; -webkit-tap-highlight-color: transparent; }
+    /* 모바일 스크롤바 정리 */
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
   </style>
 </head>
-<body class="bg-[#0b0c13] dopa-grid text-slate-100 min-h-screen py-8 px-4">
-  <div class="max-w-5xl mx-auto space-y-6">
-    
-    <!-- 헤더 & 도파 브랜딩 배너 -->
-    <header class="text-center space-y-2">
-      <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#ff007a]/10 border border-[#ff007a]/30 text-[#ff007a] text-xs font-bold tracking-wider">
-        <span>⚡ DOPA STUDIO X TWITTER</span>
-        <span class="text-[10px] bg-[#ff007a] text-white px-1.5 py-0.5 rounded">FREE</span>
-      </div>
-      <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight text-white">
-        도파 감성 <span id="titleHighlight" class="text-[#ff007a] transition-colors">움짤 페어틀</span> 생성기
-      </h1>
-      <p class="text-xs md:text-sm text-slate-400">
-        포토샵 없이 폰으로 10초 만에 만드는 아이폰 & 플레이어 루프 움짤
-      </p>
-    </header>
+<body class="bg-[#09090b] text-zinc-100 min-h-screen pb-12">
 
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+  <!-- 미니멀 감성 네비게이션 -->
+  <header class="border-b border-zinc-800/80 px-4 py-3 bg-[#09090b]/80 backdrop-blur sticky top-0 z-30 flex items-center justify-between">
+    <div class="flex items-center space-x-2">
+      <span class="text-xs font-semibold tracking-wider text-zinc-400 uppercase">Pair Gif Maker</span>
+      <span class="text-[10px] text-zinc-500 border border-zinc-800 px-1.5 py-0.5 rounded">beta</span>
+    </div>
+    <span class="text-xs text-zinc-500 font-mono">100% client-side</span>
+  </header>
+
+  <main class="max-w-xl mx-auto px-4 pt-4 space-y-5">
+
+    <!-- 1. 캔버스 프리뷰 카드 (정방형 3:4 감성 비율) -->
+    <div class="relative bg-zinc-950 rounded-2xl p-2 border border-zinc-800 shadow-2xl flex flex-col items-center">
+      <canvas id="previewCanvas" width="540" height="700" class="w-full max-w-[320px] aspect-[540/700] rounded-xl bg-black shadow-inner"></canvas>
       
-      <!-- [왼쪽] 미리보기 캔버스 & 다운로드 영역 -->
-      <div class="lg:col-span-6 flex flex-col items-center space-y-4">
-        <div class="w-full bg-[#131520]/90 p-4 rounded-2xl border border-slate-800 shadow-2xl flex flex-col items-center relative overflow-hidden">
-          <div class="flex items-center justify-between w-full mb-3 text-xs text-slate-400">
-            <span class="flex items-center gap-1.5 font-medium">
-              <span class="w-2 h-2 rounded-full bg-[#ff007a] animate-pulse"></span>
-              실시간 렌더링 프리뷰
-            </span>
-            <span class="text-[11px] text-slate-500">600 x 780 px</span>
-          </div>
+      <div class="w-full px-2 pt-2 flex items-center justify-between text-[11px] text-zinc-500">
+        <span class="flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          실시간 미리보기
+        </span>
+        <span class="text-zinc-600 font-mono">540×700</span>
+      </div>
+    </div>
 
-          <!-- 캔버스 (3:4 비율에 최적화) -->
-          <canvas id="previewCanvas" width="600" height="780" class="w-full max-w-[340px] aspect-[3/3.9] rounded-xl shadow-2xl bg-black border border-slate-800"></canvas>
+    <!-- 2. 다운로드 및 GIF 변환 버튼 -->
+    <div class="space-y-2">
+      <button id="btnGenerate" class="w-full py-3.5 bg-zinc-100 hover:bg-white text-zinc-950 font-bold rounded-xl text-sm transition-all shadow-md active:scale-[0.99] flex items-center justify-center space-x-2">
+        <span id="btnIcon">✨</span>
+        <span id="btnText">움짤(GIF) 내보내기</span>
+      </button>
+
+      <!-- 인코딩 프로그레스 -->
+      <div id="loadingStatus" class="hidden space-y-1.5 py-2">
+        <div class="w-full bg-zinc-800 h-1.5 rounded-full overflow-hidden">
+          <div id="progressBar" class="bg-indigo-500 h-full w-0 transition-all duration-200"></div>
         </div>
-
-        <!-- 액션 버튼 -->
-        <div class="w-full space-y-3">
-          <button id="btnGenerate" class="w-full py-4 bg-gradient-to-r from-[#ff007a] to-[#8b5cf6] hover:opacity-95 text-white font-extrabold rounded-xl shadow-lg shadow-[#ff007a]/20 transition-all flex items-center justify-center space-x-2 text-sm tracking-wide">
-            <span>🎬 움짤(GIF) 만들기 & 저장</span>
-          </button>
-          
-          <!-- 인코딩 진행률 바 -->
-          <div id="loadingStatus" class="hidden text-center space-y-2 py-2">
-            <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden border border-slate-700">
-              <div id="progressBar" class="bg-[#ff007a] h-full w-0 transition-all duration-300"></div>
-            </div>
-            <p id="statusMsg" class="text-xs text-slate-400 font-mono">인코딩 준비 중...</p>
-          </div>
-
-          <!-- GIF 완성 후 노출 영역 -->
-          <div id="resultArea" class="hidden flex flex-col items-center space-y-3 p-4 bg-[#181b2a] rounded-xl border border-slate-700">
-            <img id="resultGif" class="w-full max-w-[240px] rounded-lg border border-[#ff007a]/40 shadow-lg" alt="생성된 움짤">
-            <div class="flex w-full gap-2">
-              <a id="btnDownload" download="dopa_pair.gif" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-center font-bold rounded-lg text-xs transition">
-                💾 갤러리에 저장
-              </a>
-              <button id="btnShareX" class="py-2.5 px-3 bg-black hover:bg-slate-900 border border-slate-700 font-bold rounded-lg text-xs transition flex items-center gap-1">
-                <span>𝕏</span> <span>트위터에 자랑</span>
-              </button>
-            </div>
-            
-            <!-- 도파 웹앱 마케팅 유입 CTA 배너 -->
-            <a href="https://your-dopa-service-link.com" target="_blank" class="w-full mt-2 p-3 rounded-lg bg-gradient-to-r from-[#ff007a]/20 to-[#8b5cf6]/20 border border-[#ff007a]/40 flex items-center justify-between group hover:border-[#ff007a] transition">
-              <div class="text-left">
-                <div class="text-xs font-bold text-white flex items-center gap-1">
-                  <span>😈</span> 도파(DOPA)에서 둘의 서사 굴리기
-                </div>
-                <div class="text-[10px] text-slate-400">혐관·구연인·배틀호모 AI 텍스트 RPG 무료 플레이</div>
-              </div>
-              <span class="text-xs font-bold text-[#ff007a] group-hover:translate-x-1 transition-transform">→</span>
-            </a>
-          </div>
-        </div>
+        <p id="statusMsg" class="text-center text-[11px] text-zinc-400 font-mono">프레임 추출 중...</p>
       </div>
 
-      <!-- [오른쪽] 커스텀 제어판 (도파 테마 컬러 및 텍스트) -->
-      <div class="lg:col-span-6 bg-[#131520]/90 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-5">
+      <!-- 완성 결과물 노출 -->
+      <div id="resultArea" class="hidden flex flex-col items-center space-y-3 p-3 bg-zinc-900/90 rounded-xl border border-zinc-800">
+        <img id="resultGif" class="w-full max-w-[220px] rounded-lg shadow-xl" alt="결과 GIF">
+        <div class="flex w-full gap-2">
+          <a id="btnDownload" download="pair_aesthetic.gif" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-center font-semibold rounded-lg text-xs transition">
+            💾 갤러리에 저장하기
+          </a>
+          <button id="btnShareX" class="py-2.5 px-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-semibold rounded-lg text-xs transition flex items-center gap-1">
+            𝕏 트윗
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. 모바일 최적화 탭 컨트롤러 -->
+    <div class="bg-zinc-900/80 rounded-2xl border border-zinc-800/80 overflow-hidden">
+      <!-- 탭 바 -->
+      <div class="grid grid-cols-3 border-b border-zinc-800 text-xs font-medium text-center">
+        <button id="tabBtn1" class="tab-btn py-3 border-b-2 border-indigo-500 text-white font-semibold transition" data-tab="tab1">🖼️ 이미지</button>
+        <button id="tabBtn2" class="tab-btn py-3 border-b-2 border-transparent text-zinc-400 hover:text-zinc-200 transition" data-tab="tab2">✍️ 대사·텍스트</button>
+        <button id="tabBtn3" class="tab-btn py-3 border-b-2 border-transparent text-zinc-400 hover:text-zinc-200 transition" data-tab="tab3">🎨 테마 색상</button>
+      </div>
+
+      <div class="p-4 space-y-4">
         
-        <!-- 1. 테마 포인트 컬러 선택 (색상 커스텀) -->
-        <div>
-          <label class="block text-xs font-bold text-slate-300 mb-2">🎨 테마 포인트 컬러 (대사창 / 바코드 / 네온 효과)</label>
-          <div class="flex items-center gap-2 flex-wrap">
-            <button type="button" class="color-chip w-7 h-7 rounded-full bg-[#ff007a] ring-2 ring-white ring-offset-2 ring-offset-[#131520]" data-color="#ff007a" title="도파 핑크"></button>
-            <button type="button" class="color-chip w-7 h-7 rounded-full bg-[#8b5cf6]" data-color="#8b5cf6" title="네온 바이올렛"></button>
-            <button type="button" class="color-chip w-7 h-7 rounded-full bg-[#06b6d4]" data-color="#06b6d4" title="사이버 시안"></button>
-            <button type="button" class="color-chip w-7 h-7 rounded-full bg-[#84cc16]" data-color="#84cc16" title="애시드 라임"></button>
-            <button type="button" class="color-chip w-7 h-7 rounded-full bg-[#ffffff]" data-color="#ffffff" title="모노 화이트"></button>
-            <div class="flex items-center gap-1.5 ml-2 pl-2 border-l border-slate-700">
-              <input type="color" id="customColorPicker" value="#ff007a" class="w-7 h-7 rounded cursor-pointer bg-transparent border-0">
-              <span class="text-[11px] text-slate-400 font-mono" id="hexText">#ff007a</span>
-            </div>
+        <!-- [탭 1] 이미지 업로드 -->
+        <div id="tab1" class="tab-content space-y-3">
+          <div>
+            <label class="block text-xs font-medium text-zinc-300 mb-1.5">메인 배경 일러스트</label>
+            <input type="file" id="bgInput" accept="image/*" class="w-full text-xs text-zinc-400 file:mr-2.5 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-zinc-800 file:text-zinc-200 hover:file:bg-zinc-700 cursor-pointer">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-zinc-300 mb-1.5">아이폰 배경 (선택 / 비우면 메인 이미지 적용)</label>
+            <input type="file" id="phoneInput" accept="image/*" class="w-full text-xs text-zinc-400 file:mr-2.5 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-zinc-800 file:text-zinc-200 hover:file:bg-zinc-700 cursor-pointer">
           </div>
         </div>
 
-        <!-- 2. 이미지 업로드 -->
-        <div class="space-y-3 border-t border-slate-800 pt-4">
+        <!-- [탭 2] 텍스트 & 대사 입력 -->
+        <div id="tab2" class="tab-content hidden space-y-3">
           <div>
-            <label class="block text-xs font-bold text-slate-300 mb-1">🖼️ 메인 페어 일러스트 (필수)</label>
-            <input type="file" id="bgImageInput" accept="image/*" class="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-bold file:bg-[#ff007a] file:text-white hover:file:bg-[#e0006c] cursor-pointer">
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-300 mb-1">📱 스마트폰 배경 일러스트 (선택 / 비우면 메인 일러스트 자동 적용)</label>
-            <input type="file" id="phoneImageInput" accept="image/*" class="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-slate-700 file:text-slate-200 hover:file:bg-slate-600 cursor-pointer">
-          </div>
-        </div>
-
-        <!-- 3. 플로팅 대사 및 잠금화면 텍스트 -->
-        <div class="space-y-3 border-t border-slate-800 pt-4">
-          <span class="text-xs font-extrabold text-[#ff007a] tracking-wider uppercase">💬 대사 & 알림 설정</span>
-          
-          <div>
-            <label class="text-[11px] text-slate-400">상단 플로팅 인용 대사</label>
-            <input type="text" id="floatingQuote" value="오늘도 내 곁에 있어 줄 거죠?" class="w-full bg-[#0b0c13] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[#ff007a]">
+            <label class="text-[11px] text-zinc-400">상단 인용 대사</label>
+            <input type="text" id="quoteText" value="오늘도 내 곁에 있어 줄 거죠?" class="w-full mt-1 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-zinc-500">
           </div>
 
           <div class="grid grid-cols-2 gap-2">
             <div>
-              <label class="text-[11px] text-slate-400">잠금화면 시간</label>
-              <input type="text" id="phoneTime" value="08:24" class="w-full bg-[#0b0c13] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[#ff007a]">
+              <label class="text-[11px] text-zinc-400">잠금화면 시간</label>
+              <input type="text" id="phoneTime" value="08:24" class="w-full mt-1 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-zinc-500">
             </div>
             <div>
-              <label class="text-[11px] text-slate-400">발신자(페어 이름)</label>
-              <input type="text" id="notiSender" value="백우진" class="w-full bg-[#0b0c13] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[#ff007a]">
+              <label class="text-[11px] text-zinc-400">발신자(페어 이름)</label>
+              <input type="text" id="senderName" value="마인에이스" class="w-full mt-1 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-zinc-500">
             </div>
           </div>
 
           <div>
-            <label class="text-[11px] text-slate-400">아이폰 푸시 알림 1</label>
-            <input type="text" id="notiMsg1" value="지금 내 밑으로 기어들어온 기분이 어때?" class="w-full bg-[#0b0c13] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[#ff007a]">
+            <label class="text-[11px] text-zinc-400">알림 메시지 1</label>
+            <input type="text" id="msg1" value="기어들어온 기분이 어때?" class="w-full mt-1 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-zinc-500">
           </div>
+
           <div>
-            <label class="text-[11px] text-slate-400">아이폰 푸시 알림 2</label>
-            <input type="text" id="notiMsg2" value="점심 시간에 옥상으로 와요. 재미있는 거 보여줄 테니까." class="w-full bg-[#0b0c13] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[#ff007a]">
+            <label class="text-[11px] text-zinc-400">알림 메시지 2</label>
+            <input type="text" id="msg2" value="네가 없으면 안 돼." class="w-full mt-1 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-zinc-500">
           </div>
-        </div>
 
-        <!-- 4. 뮤직 플레이어 위젯 설정 -->
-        <div class="space-y-3 border-t border-slate-800 pt-4">
-          <span class="text-xs font-extrabold text-[#ff007a] tracking-wider uppercase">🎵 미니 뮤직 플레이어 위젯</span>
-          <div class="grid grid-cols-2 gap-2">
+          <div class="grid grid-cols-2 gap-2 pt-1 border-t border-zinc-800">
             <div>
-              <label class="text-[11px] text-slate-400">노래 제목</label>
-              <input type="text" id="musicTitle" value="Mystery of Love" class="w-full bg-[#0b0c13] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[#ff007a]">
+              <label class="text-[11px] text-zinc-400">음악 제목</label>
+              <input type="text" id="songTitle" value="Mystery of Love" class="w-full mt-1 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-zinc-500">
             </div>
             <div>
-              <label class="text-[11px] text-slate-400">아티스트 / 테마곡</label>
-              <input type="text" id="musicArtist" value="Sufjan Stevens" class="w-full bg-[#0b0c13] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[#ff007a]">
+              <label class="text-[11px] text-zinc-400">가수 / 테마</label>
+              <input type="text" id="artistName" value="Sufjan Stevens" class="w-full mt-1 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-zinc-500">
             </div>
           </div>
         </div>
 
-        <!-- 5. 도파 시그니처 바코드 태그 -->
-        <div class="space-y-2 border-t border-slate-800 pt-4">
-          <div class="flex justify-between items-center">
-            <span class="text-xs font-bold text-slate-300">🔖 도파(DOPA) 시그니처 바코드 태그</span>
-            <span class="text-[10px] text-[#ff007a] font-mono">DPA-0100 FIXED</span>
+        <!-- [탭 3] 테마 색상 팔레트 -->
+        <div id="tab3" class="tab-content hidden space-y-3">
+          <label class="block text-xs font-medium text-zinc-400">포인트 테마 색상 선택</label>
+          <div class="flex items-center gap-2.5 flex-wrap">
+            <button class="color-btn w-8 h-8 rounded-full bg-[#ff2a85] ring-2 ring-white ring-offset-2 ring-offset-zinc-900 transition" data-color="#ff2a85" title="도파 핑크"></button>
+            <button class="color-btn w-8 h-8 rounded-full bg-[#8b5cf6] transition" data-color="#8b5cf6" title="라벤더 퍼플"></button>
+            <button class="color-btn w-8 h-8 rounded-full bg-[#38bdf8] transition" data-color="#38bdf8" title="세레니티 블루"></button>
+            <button class="color-btn w-8 h-8 rounded-full bg-[#34d399] transition" data-color="#34d399" title="소프트 민트"></button>
+            <button class="color-btn w-8 h-8 rounded-full bg-[#e4e4e7] transition" data-color="#e4e4e7" title="모노 화이트"></button>
+            
+            <div class="flex items-center gap-1.5 ml-2 pl-2 border-l border-zinc-800">
+              <input type="color" id="nativeColorPicker" value="#ff2a85" class="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-0">
+              <span id="hexDisplay" class="text-xs font-mono text-zinc-400">#ff2a85</span>
+            </div>
           </div>
-          <p class="text-[11px] text-slate-500">
-            하단에 도파 공식 바코드와 윙크 도깨비 로고가 다꾸 스티커 스타일로 자동 각인됩니다.
+          <p class="text-[11px] text-zinc-500 pt-1">
+            재생 프로그레스 바, 알림 배지, 반짝이 이펙트의 포인트 색상으로 적용됩니다.
           </p>
         </div>
 
       </div>
     </div>
-  </div>
+
+    <!-- 미니멀 크레딧 (자연스러운 스텔스 브랜딩) -->
+    <footer class="text-center pt-2">
+      <a href="https://your-dopa-url.com" target="_blank" class="inline-flex items-center gap-1.5 text-[11px] text-zinc-500 hover:text-zinc-300 transition">
+        <span>crafted for lovers & creators</span>
+        <span>·</span>
+        <span class="font-medium underline underline-offset-2">dopa studio</span>
+      </a>
+    </footer>
+
+  </main>
 
   <script>
-    // 캔버스 설정
+    // 캔버스 초기화
     const canvas = document.getElementById('previewCanvas');
     const ctx = canvas.getContext('2d');
 
-    // 상태 관리
+    // 이미지 및 테마 상태
     let bgImg = null;
     let phoneImg = null;
     let animProgress = 0;
-    let themeColor = '#ff007a'; // 기본 도파 핫핑크
+    let themeColor = '#ff2a85';
 
-    // 도파 윙크 도깨비 아이콘 SVG (인라인 데이터 URI로 로컬 렌더링)
-    const dopaIconImg = new Image();
-    dopaIconImg.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><polygon points="26,34 14,8 38,24" fill="%23ff007a"/><polygon points="74,34 86,8 62,24" fill="%23ff007a"/><circle cx="52" cy="56" r="38" fill="%236b21a8"/><circle cx="49" cy="53" r="37" fill="%23ff007a"/><line x1="33" y1="46" x2="44" y2="57" stroke="%23111827" stroke-width="4.5" stroke-linecap="round"/><line x1="44" y1="46" x2="33" y2="57" stroke="%23111827" stroke-width="4.5" stroke-linecap="round"/><path d="M 56 50 Q 64 42 72 51" fill="none" stroke="%23111827" stroke-width="4.5" stroke-linecap="round"/><path d="M 37 66 Q 52 80 67 65" fill="none" stroke="%23111827" stroke-width="4.5" stroke-linecap="round"/><polygon points="61,70 65,77 67,70" fill="%23111827"/><polygon points="85,18 87,14 91,16 88,19 90,23 86,21 83,24 84,20 80,18 84,17" fill="%23ffffff"/></svg>`;
-
-    // 폼 요소 참조
-    const bgInput = document.getElementById('bgImageInput');
-    const phoneInput = document.getElementById('phoneImageInput');
-    const floatingQuote = document.getElementById('floatingQuote');
+    // 폼 참조
+    const bgInput = document.getElementById('bgInput');
+    const phoneInput = document.getElementById('phoneInput');
+    const quoteText = document.getElementById('quoteText');
     const phoneTime = document.getElementById('phoneTime');
-    const notiSender = document.getElementById('notiSender');
-    const notiMsg1 = document.getElementById('notiMsg1');
-    const notiMsg2 = document.getElementById('notiMsg2');
-    const musicTitle = document.getElementById('musicTitle');
-    const musicArtist = document.getElementById('musicArtist');
-    const customColorPicker = document.getElementById('customColorPicker');
-    const hexText = document.getElementById('hexText');
-    const titleHighlight = document.getElementById('titleHighlight');
+    const senderName = document.getElementById('senderName');
+    const msg1 = document.getElementById('msg1');
+    const msg2 = document.getElementById('msg2');
+    const songTitle = document.getElementById('songTitle');
+    const artistName = document.getElementById('artistName');
+    const nativeColorPicker = document.getElementById('nativeColorPicker');
+    const hexDisplay = document.getElementById('hexDisplay');
 
-    // 컬러 칩 클릭 이벤트
-    document.querySelectorAll('.color-chip').forEach(chip => {
-      chip.addEventListener('click', () => {
-        document.querySelectorAll('.color-chip').forEach(c => c.classList.remove('ring-2', 'ring-white', 'ring-offset-2', 'ring-offset-[#131520]'));
-        chip.classList.add('ring-2', 'ring-white', 'ring-offset-2', 'ring-offset-[#131520]');
-        themeColor = chip.dataset.color;
-        customColorPicker.value = themeColor;
-        hexText.textContent = themeColor;
-        titleHighlight.style.color = themeColor;
+    // 탭 전환 처리
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => {
+          b.classList.remove('border-indigo-500', 'text-white');
+          b.classList.add('border-transparent', 'text-zinc-400');
+        });
+        btn.classList.add('border-indigo-500', 'text-white');
+        btn.classList.remove('border-transparent', 'text-zinc-400');
+
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+        document.getElementById(btn.dataset.tab).classList.remove('hidden');
+      });
+    });
+
+    // 컬러 칩 선택
+    document.querySelectorAll('.color-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('ring-2', 'ring-white', 'ring-offset-2', 'ring-offset-zinc-900'));
+        btn.classList.add('ring-2', 'ring-white', 'ring-offset-2', 'ring-offset-zinc-900');
+        themeColor = btn.dataset.color;
+        nativeColorPicker.value = themeColor;
+        hexDisplay.textContent = themeColor;
         draw();
       });
     });
 
-    customColorPicker.addEventListener('input', (e) => {
+    nativeColorPicker.addEventListener('input', (e) => {
       themeColor = e.target.value;
-      hexText.textContent = themeColor;
-      titleHighlight.style.color = themeColor;
+      hexDisplay.textContent = themeColor;
       draw();
     });
 
-    // 이미지 로더 유틸
-    function handleFile(input, callback) {
-      if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const img = new Image();
-          img.onload = () => callback(img);
-          img.src = e.target.result;
-        };
-        reader.readAsDataURL(input.files[0]);
-      }
+    // 이미지 파일 로더
+    function bindImageUpload(inputEl, callback) {
+      inputEl.addEventListener('change', () => {
+        if (inputEl.files && inputEl.files[0]) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => { callback(img); draw(); };
+            img.src = e.target.result;
+          };
+          reader.readAsDataURL(inputEl.files[0]);
+        }
+      });
     }
+    bindImageUpload(bgInput, (img) => bgImg = img);
+    bindImageUpload(phoneInput, (img) => phoneImg = img);
 
-    bgInput.addEventListener('change', () => handleFile(bgInput, (img) => { bgImg = img; draw(); }));
-    phoneInput.addEventListener('change', () => handleFile(phoneInput, (img) => { phoneImg = img; draw(); }));
-
-    [floatingQuote, phoneTime, notiSender, notiMsg1, notiMsg2, musicTitle, musicArtist].forEach(el => {
+    [quoteText, phoneTime, senderName, msg1, msg2, songTitle, artistName].forEach(el => {
       el.addEventListener('input', () => draw());
     });
 
-    // 둥근 사각형 헬퍼
-    function roundRect(ctx, x, y, w, h, r) {
-      ctx.beginPath();
-      ctx.moveTo(x + r, y);
-      ctx.lineTo(x + w - r);
-      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-      ctx.lineTo(x + w, y + h - r);
-      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-      ctx.lineTo(x + r, y + h);
-      ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-      ctx.lineTo(x, y + r);
-      ctx.quadraticCurveTo(x, y, x + r, y);
-      ctx.closePath();
+    // 에러 없는 캔버스 둥근 사각형 유틸
+    function drawRoundRect(c, x, y, w, h, r) {
+      c.beginPath();
+      c.moveTo(x + r, y);
+      c.arcTo(x + w, y, x + w, y + h, r);
+      c.arcTo(x + w, y + h, x, y + h, r);
+      c.arcTo(x, y + h, x, y, r);
+      c.arcTo(x, y, x + w, y, r);
+      c.closePath();
     }
 
-    // 메인 그리기 루틴 (progress: 0.0 ~ 1.0)
+    // 메인 드로잉 함수
     function draw(prog = animProgress) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -281,311 +269,267 @@
         const h = bgImg.height * scale;
         ctx.drawImage(bgImg, (canvas.width - w) / 2, (canvas.height - h) / 2, w, h);
       } else {
-        // 기본 배경 그라데이션
+        // 일러스트 없을 때 기본 감성 다크 그라데이션
         const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-        grad.addColorStop(0, '#151722');
-        grad.addColorStop(1, '#090a10');
+        grad.addColorStop(0, '#1c1917');
+        grad.addColorStop(0.5, '#0f172a');
+        grad.addColorStop(1, '#020617');
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        ctx.fillStyle = '#64748b';
-        ctx.font = '15px Pretendard';
+
+        ctx.fillStyle = '#71717a';
+        ctx.font = '13px Pretendard';
         ctx.textAlign = 'center';
-        ctx.fillText('일러스트를 업로드하면 페어틀이 완성됩니다', canvas.width / 2, canvas.height / 2 - 30);
+        ctx.fillText('이미지 탭에서 일러스트를 등록해주세요', canvas.width / 2, 260);
       }
 
-      // 도파 무드의 어두운 비네팅 + 모눈종이 그리드 오버레이
-      ctx.fillStyle = 'rgba(7, 8, 14, 0.45)';
+      // 비네팅 톤 다운 (가독성 향상)
+      ctx.fillStyle = 'rgba(9, 9, 11, 0.4)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      drawGridOverlay();
 
-      // 2. 글리터(별빛) 깜빡임 루프
-      drawSparkles(prog);
+      // 2. 글리터 반짝임 루프 (십자 별빛)
+      renderGlitter(prog);
 
-      // 3. 상단 플로팅 대사 말풍선 (레퍼런스 형태)
-      drawTopFloatingQuote(prog);
+      // 3. 상단 대사 인용 카드
+      renderQuoteCard();
 
-      // 4. 우측 스마트폰 목업 (아이폰 + 푸시 알림)
-      drawIPhoneMockup(prog);
+      // 4. 좌측 미니 뮤직 플레이어 위젯
+      renderMusicPlayer(prog);
 
-      // 5. 좌측 미니 뮤직 플레이어 위젯
-      drawMusicPlayerWidget(prog);
-
-      // 6. 하단 도파 시그니처 바코드 스티커 [DPA-0100]
-      drawDopaBarcodeSticker();
+      // 5. 우측 아이폰 잠금화면 목업
+      renderIPhoneMockup(prog);
     }
 
-    // 도파 시그니처 모눈 그리드 캔버스 오버레이
-    function drawGridOverlay() {
-      ctx.save();
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
-      ctx.lineWidth = 1;
-      const step = 20;
-      for (let x = 0; x < canvas.width; x += step) {
-        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
-      }
-      for (let y = 0; y < canvas.height; y += step) {
-        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
-      }
-      ctx.restore();
-    }
-
-    // 십자 반짝이(스파클) 애니메이션
-    const sparkles = [
-      { x: 70, y: 130, size: 6, offset: 0 },
-      { x: 260, y: 70, size: 7, offset: 0.25 },
-      { x: 100, y: 560, size: 8, offset: 0.5 },
-      { x: 290, y: 690, size: 5, offset: 0.75 },
+    // 십자 글리터 별빛 렌더러
+    const glitterCoords = [
+      { x: 50, y: 180, s: 7, p: 0.1 },
+      { x: 230, y: 70, s: 9, p: 0.4 },
+      { x: 70, y: 530, s: 8, p: 0.7 },
+      { x: 270, y: 640, s: 6, p: 0.25 },
+      { x: 190, y: 440, s: 7, p: 0.85 }
     ];
-    function drawSparkles(prog) {
-      sparkles.forEach(s => {
-        const alpha = Math.sin((prog + s.offset) * Math.PI * 2) * 0.5 + 0.5;
+    function renderGlitter(prog) {
+      glitterCoords.forEach(item => {
+        const alpha = Math.sin((prog + item.p) * Math.PI * 2) * 0.45 + 0.55;
         ctx.save();
+        ctx.strokeStyle = '#ffffff';
         ctx.fillStyle = themeColor;
-        ctx.globalAlpha = Math.max(0.1, alpha);
-        
+        ctx.globalAlpha = alpha;
+
+        // 중심 원
         ctx.beginPath();
-        ctx.arc(s.x, s.y, s.size * 0.4, 0, Math.PI * 2);
+        ctx.arc(item.x, item.y, item.s * 0.35, 0, Math.PI * 2);
         ctx.fill();
 
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 1.6;
+        // 십자 빛
+        ctx.lineWidth = 1.4;
         ctx.beginPath();
-        ctx.moveTo(s.x - s.size * 1.8, s.y); ctx.lineTo(s.x + s.size * 1.8, s.y);
-        ctx.moveTo(s.x, s.y - s.size * 1.8); ctx.lineTo(s.x, s.y + s.size * 1.8);
+        ctx.moveTo(item.x - item.s * 1.6, item.y); ctx.lineTo(item.x + item.s * 1.6, item.y);
+        ctx.moveTo(item.x, item.y - item.s * 1.6); ctx.lineTo(item.x, item.y + item.s * 1.6);
         ctx.stroke();
         ctx.restore();
       });
     }
 
-    // 상단 플로팅 인용 대사 알림
-    function drawTopFloatingQuote(prog) {
-      const text = floatingQuote.value.trim();
+    // 상단 대사 인용 카드
+    function renderQuoteCard() {
+      const text = quoteText.value.trim();
       if (!text) return;
-      const qx = 40, qy = 50, qw = 300, qh = 42;
+      const qx = 35, qy = 50, qw = 260, qh = 42;
 
       ctx.save();
-      roundRect(ctx, qx, qy, qw, qh, 21);
-      ctx.fillStyle = 'rgba(17, 24, 39, 0.7)';
+      drawRoundRect(ctx, qx, qy, qw, qh, 21);
+      ctx.fillStyle = 'rgba(18, 18, 23, 0.75)';
       ctx.fill();
-      ctx.strokeStyle = themeColor;
-      ctx.lineWidth = 1.2;
-      ctx.shadowColor = themeColor;
-      ctx.shadowBlur = 8;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+      ctx.lineWidth = 1;
       ctx.stroke();
 
-      // 인용 따옴표
+      // 인용 부호
       ctx.fillStyle = themeColor;
-      ctx.font = 'bold 16px Pretendard';
+      ctx.font = 'bold 15px Pretendard';
       ctx.textAlign = 'left';
       ctx.fillText('“', qx + 14, qy + 26);
 
       // 대사 텍스트
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '500 12px Pretendard';
-      ctx.fillText(text.length > 20 ? text.slice(0, 20) + '...' : text, qx + 32, qy + 26);
+      ctx.fillStyle = '#f4f4f5';
+      ctx.font = '500 11.5px Pretendard';
+      ctx.fillText(text.length > 17 ? text.slice(0, 17) + '...' : text, qx + 30, qy + 26);
       ctx.restore();
     }
 
-    // 아이폰 목업 렌더링
-    function drawIPhoneMockup(prog) {
-      const px = 330, py = 110, pw = 236, ph = 490, r = 38;
+    // 미니 뮤직 플레이어 위젯 (Apple Music 감성)
+    function renderMusicPlayer(prog) {
+      const mx = 35, my = 290, mw = 220, mh = 98;
 
       ctx.save();
-      // 스마트폰 외곽 그림자
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
-      ctx.shadowBlur = 24;
-      ctx.shadowOffsetX = 6;
-      ctx.shadowOffsetY = 12;
-
-      roundRect(ctx, px, py, pw, ph, r);
-      ctx.fillStyle = '#0f172a';
+      // 글래스모피즘 베이스
+      drawRoundRect(ctx, mx, my, mw, mh, 16);
+      ctx.fillStyle = 'rgba(15, 15, 20, 0.85)';
       ctx.fill();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // 앨범 커버
+      drawRoundRect(ctx, mx + 12, my + 14, 42, 42, 8);
+      ctx.fillStyle = '#27272a';
+      ctx.fill();
+      if (bgImg) {
+        ctx.save();
+        drawRoundRect(ctx, mx + 12, my + 14, 42, 42, 8);
+        ctx.clip();
+        ctx.drawImage(bgImg, mx + 12, my + 14, 42, 42);
+        ctx.restore();
+      }
+
+      // 곡 정보
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 12px Pretendard';
+      ctx.textAlign = 'left';
+      const title = songTitle.value;
+      ctx.fillText(title.length > 12 ? title.slice(0, 12) + '..' : title, mx + 64, my + 30);
+
+      ctx.fillStyle = '#a1a1aa';
+      ctx.font = '10.5px Pretendard';
+      const artist = artistName.value;
+      ctx.fillText(artist.length > 13 ? artist.slice(0, 13) + '..' : artist, mx + 64, my + 46);
+
+      // 움직이는 재생 프로그레스 바
+      const bx = mx + 14, by = my + 72, bw = mw - 28;
+      ctx.beginPath();
+      ctx.moveTo(bx, by); ctx.lineTo(bx + bw, by);
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
       ctx.lineWidth = 3.5;
-      ctx.strokeStyle = '#334155';
+      ctx.lineCap = 'round';
+      ctx.stroke();
+
+      // 현재 진행 바 (부드러운 전진 루프)
+      const currentFill = bw * (0.3 + prog * 0.4);
+      ctx.beginPath();
+      ctx.moveTo(bx, by); ctx.lineTo(bx + currentFill, by);
+      ctx.strokeStyle = themeColor;
+      ctx.lineWidth = 3.5;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+
+      // 헤드 핀
+      ctx.beginPath();
+      ctx.arc(bx + currentFill, by, 4, 0, Math.PI * 2);
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+
+      // 우측 하단 미니멀 워터마크 (스텔스 브랜딩)
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+      ctx.font = '9px monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText('dopa', mx + mw - 14, my + 88);
+
+      ctx.restore();
+    }
+
+    // 아이폰 잠금화면 목업
+    function renderIPhoneMockup(prog) {
+      const px = 275, py = 105, pw = 230, ph = 480, r = 36;
+
+      ctx.save();
+      // 스마트폰 그림자
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.55)';
+      ctx.shadowBlur = 20;
+      ctx.shadowOffsetX = 4;
+      ctx.shadowOffsetY = 10;
+
+      // 외곽 프레임
+      drawRoundRect(ctx, px, py, pw, ph, r);
+      ctx.fillStyle = '#09090b';
+      ctx.fill();
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = '#27272a';
       ctx.stroke();
       ctx.restore();
 
-      // 화면 클리핑 영역
+      // 스크린 클리핑 영역
       ctx.save();
-      roundRect(ctx, px + 5, py + 5, pw - 10, ph - 10, r - 4);
+      drawRoundRect(ctx, px + 5, py + 5, pw - 10, ph - 10, r - 4);
       ctx.clip();
 
-      // 폰 배경화면
-      const targetImg = phoneImg || bgImg;
-      if (targetImg) {
-        const s = Math.max((pw - 10) / targetImg.width, (ph - 10) / targetImg.height);
-        const iw = targetImg.width * s, ih = targetImg.height * s;
-        ctx.drawImage(targetImg, px + 5 + (pw - 10 - iw) / 2, py + 5 + (ph - 10 - ih) / 2, iw, ih);
-        ctx.fillStyle = 'rgba(11, 12, 19, 0.38)';
+      // 폰 내부 배경 일러스트
+      const targetPhoneImg = phoneImg || bgImg;
+      if (targetPhoneImg) {
+        const s = Math.max((pw - 10) / targetPhoneImg.width, (ph - 10) / targetPhoneImg.height);
+        const iw = targetPhoneImg.width * s, ih = targetPhoneImg.height * s;
+        ctx.drawImage(targetPhoneImg, px + 5 + (pw - 10 - iw) / 2, py + 5 + (ph - 10 - ih) / 2, iw, ih);
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
         ctx.fillRect(px + 5, py + 5, pw - 10, ph - 10);
       } else {
-        ctx.fillStyle = '#1e1b4b';
+        ctx.fillStyle = '#18181b';
         ctx.fillRect(px + 5, py + 5, pw - 10, ph - 10);
       }
 
       // 다이내믹 아일랜드
-      roundRect(ctx, px + pw / 2 - 34, py + 14, 68, 18, 9);
+      drawRoundRect(ctx, px + pw / 2 - 32, py + 14, 64, 18, 9);
       ctx.fillStyle = '#000000';
       ctx.fill();
 
-      // 시간 시계 (루프에 따라 콜론 깜빡임)
+      // 잠금화면 시계 (콜론 깜빡임)
       const colon = prog < 0.5 ? ':' : ' ';
-      const timeStr = phoneTime.value.includes(':') 
-        ? phoneTime.value.replace(':', colon)
-        : phoneTime.value;
-
+      const timeVal = phoneTime.value.includes(':') ? phoneTime.value.replace(':', colon) : phoneTime.value;
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 36px Pretendard';
       ctx.textAlign = 'center';
-      ctx.fillText(timeStr, px + pw / 2, py + 104);
+      ctx.fillText(timeVal, px + pw / 2, py + 98);
 
-      // 알림 카드 1 & 2 (도파 도깨비 아이콘 적용)
-      drawNotiPill(px + 12, py + 138, pw - 24, 52, notiSender.value, notiMsg1.value);
-      drawNotiPill(px + 12, py + 198, pw - 24, 52, notiSender.value, notiMsg2.value);
+      // 알림 메시지 카드 1 & 2
+      renderNotiBubble(px + 12, py + 130, pw - 24, 48, senderName.value, msg1.value);
+      renderNotiBubble(px + 12, py + 186, pw - 24, 48, senderName.value, msg2.value);
 
       ctx.restore();
     }
 
-    // 아이폰 푸시 알림 카드
-    function drawNotiPill(x, y, w, h, sender, msg) {
+    // 알림 메시지 카드
+    function renderNotiBubble(x, y, w, h, name, message) {
       ctx.save();
-      roundRect(ctx, x, y, w, h, 14);
-      ctx.fillStyle = 'rgba(23, 23, 37, 0.85)';
+      drawRoundRect(ctx, x, y, w, h, 14);
+      ctx.fillStyle = 'rgba(24, 24, 27, 0.82)';
       ctx.fill();
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
       ctx.lineWidth = 1;
       ctx.stroke();
 
-      // 도파 공식 도깨비 아이콘 배치
-      if (dopaIconImg.complete) {
-        ctx.drawImage(dopaIconImg, x + 10, y + 10, 32, 32);
-      } else {
-        ctx.fillStyle = themeColor;
-        ctx.beginPath();
-        ctx.arc(x + 24, y + h / 2, 13, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
-      // 발신자 이름 & 태그
+      // 프로필 아바타 원형
+      ctx.beginPath();
+      ctx.arc(x + 20, y + h / 2, 12, 0, Math.PI * 2);
       ctx.fillStyle = themeColor;
+      ctx.fill();
+
+      // 아바타 내부 미니멀 아이콘
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 9px Pretendard';
+      ctx.textAlign = 'center';
+      ctx.fillText('♥', x + 20, y + h / 2 + 3);
+
+      // 발신자 이름
+      ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 11px Pretendard';
       ctx.textAlign = 'left';
-      ctx.fillText(sender, x + 48, y + 22);
+      ctx.fillText(name, x + 40, y + 20);
 
-      // 본문 미리보기
-      ctx.fillStyle = '#e2e8f0';
+      // 메시지 내용
+      ctx.fillStyle = '#d4d4d8';
       ctx.font = '10px Pretendard';
-      ctx.fillText(msg.length > 13 ? msg.slice(0, 13) + '...' : msg, x + 48, y + 38);
+      ctx.fillText(message.length > 12 ? message.slice(0, 12) + '...' : message, x + 40, y + 36);
 
       ctx.restore();
     }
 
-    // 미니 뮤직 플레이어 위젯
-    function drawMusicPlayerWidget(prog) {
-      const mx = 50, my = 290, mw = 240, mh = 104;
-
-      ctx.save();
-      roundRect(ctx, mx, my, mw, mh, 16);
-      ctx.fillStyle = 'rgba(15, 17, 26, 0.88)';
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-      ctx.lineWidth = 1;
-      ctx.stroke();
-
-      // 썸네일 (앨범 아트)
-      roundRect(ctx, mx + 14, my + 14, 46, 46, 10);
-      ctx.fillStyle = '#1e293b';
-      ctx.fill();
-      if (bgImg) {
-        ctx.save();
-        roundRect(ctx, mx + 14, my + 14, 46, 46, 10);
-        ctx.clip();
-        ctx.drawImage(bgImg, mx + 14, my + 14, 46, 46);
-        ctx.restore();
-      }
-
-      // 곡 제목 및 아티스트
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 13px Pretendard';
-      ctx.textAlign = 'left';
-      ctx.fillText(musicTitle.value.length > 13 ? musicTitle.value.slice(0, 13) + '..' : musicTitle.value, mx + 70, my + 32);
-
-      ctx.fillStyle = '#94a3b8';
-      ctx.font = '11px Pretendard';
-      ctx.fillText(musicArtist.value.length > 15 ? musicArtist.value.slice(0, 15) + '..' : musicArtist.value, mx + 70, my + 49);
-
-      // 움직이는 음악 재생 프로그레스 바 (루프 애니메이션)
-      const bx = mx + 14, by = my + 76, bw = mw - 28;
-      ctx.beginPath();
-      ctx.moveTo(bx, by); ctx.lineTo(bx + bw, by);
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-      ctx.lineWidth = 4;
-      ctx.lineCap = 'round';
-      ctx.stroke();
-
-      const curW = bw * ((prog * 0.4) + 0.3); // 30% ~ 70% 사이를 감성적으로 부드럽게 전진
-      ctx.beginPath();
-      ctx.moveTo(bx, by); ctx.lineTo(bx + curW, by);
-      ctx.strokeStyle = themeColor;
-      ctx.lineWidth = 4;
-      ctx.lineCap = 'round';
-      ctx.stroke();
-
-      // 재생 헤드 포인트
-      ctx.beginPath();
-      ctx.arc(bx + curW, by, 4.5, 0, Math.PI * 2);
-      ctx.fillStyle = '#ffffff';
-      ctx.fill();
-
-      ctx.restore();
-    }
-
-    // 도파 시그니처 바코드 스티커 [DPA-0100] (다꾸 감성 워터마크)
-    function drawDopaBarcodeSticker() {
-      const bx = 40, by = 670, bw = 175, bh = 54;
-
-      ctx.save();
-      // 흰색 스티커 라벨 베이스
-      roundRect(ctx, bx, by, bw, bh, 6);
-      ctx.fillStyle = '#ffffff';
-      ctx.fill();
-      ctx.strokeStyle = '#e2e8f0';
-      ctx.lineWidth = 1;
-      ctx.stroke();
-
-      // 상단 테마 컬러 라인
-      ctx.fillStyle = themeColor;
-      ctx.fillRect(bx, by, bw, 4);
-
-      // 바코드 라인들 (| ||| | ||)
-      ctx.fillStyle = '#0f172a';
-      const bars = [3, 1, 4, 2, 5, 2, 1, 4, 3, 2, 6, 2, 3, 1, 4, 2, 3, 5, 2, 4];
-      let curX = bx + 12;
-      bars.forEach((w, idx) => {
-        if (idx % 2 === 0) {
-          ctx.fillRect(curX, by + 10, w, 22);
-        }
-        curX += w + 2.5;
-      });
-
-      // 바코드 식별자 텍스트
-      ctx.font = 'bold 9px monospace';
-      ctx.textAlign = 'center';
-      ctx.fillStyle = '#0f172a';
-      ctx.fillText('DPA-0100 · DOPA', bx + bw / 2, by + 44);
-
-      ctx.restore();
-    }
-
-    // 실시간 미리보기 루프 (가벼운 15fps)
+    // 15fps 부드러운 미리보기 루프
     draw(0);
     setInterval(() => {
       animProgress = (animProgress + 0.05) % 1;
       draw(animProgress);
     }, 100);
 
-    // ================= GIF 인코딩 및 배포 로직 =================
+    // ================= GIF 생성 및 저장 로직 =================
     const btnGenerate = document.getElementById('btnGenerate');
     const loadingStatus = document.getElementById('loadingStatus');
     const progressBar = document.getElementById('progressBar');
@@ -600,48 +544,44 @@
       loadingStatus.classList.remove('hidden');
       resultArea.classList.add('hidden');
       progressBar.style.width = '15%';
-      statusMsg.textContent = '12개 프레임 캡처 중...';
+      statusMsg.textContent = '프레임 캡처 중...';
 
-      // 12프레임 캡처 (모바일 사파리/크롬 메모리 최적화)
+      // 가벼운 10프레임 루프 (모바일 브라우저 최적화)
       const frames = [];
-      const totalFrames = 12;
-      
+      const totalFrames = 10;
       for (let i = 0; i < totalFrames; i++) {
-        const p = i / totalFrames;
-        draw(p);
+        draw(i / totalFrames);
         frames.push(canvas.toDataURL('image/png'));
       }
 
       progressBar.style.width = '45%';
-      statusMsg.textContent = '움짤 인코딩 중 (잠시만 기다려주세요)...';
+      statusMsg.textContent = 'GIF 인코딩 중...';
 
-      // gifshot 로컬 인코딩 실행
       gifshot.createGIF({
         images: frames,
-        gifWidth: 450,
-        gifHeight: 585,
+        gifWidth: 400,
+        gifHeight: 518,
         interval: 0.12,
         numWorkers: 2
-      }, function (obj) {
+      }, function(obj) {
         btnGenerate.disabled = false;
         loadingStatus.classList.add('hidden');
 
         if (!obj.error) {
-          const gifData = obj.image;
-          resultGif.src = gifData;
-          btnDownload.href = gifData;
+          resultGif.src = obj.image;
+          btnDownload.href = obj.image;
           resultArea.classList.remove('hidden');
           resultArea.scrollIntoView({ behavior: 'smooth' });
         } else {
-          alert('GIF 생성 중 오류가 발생했습니다: ' + obj.errorMsg);
+          alert('GIF 생성 실패: 다시 시도해주세요.');
         }
       });
     });
 
-    // 트위터(X) 바이럴 공유
+    // 트위터 공유 (과한 홍보 없이 자연스러운 해시태그)
     btnShareX.addEventListener('click', () => {
       const url = window.location.href;
-      const text = encodeURIComponent(`도파 감성 무료 움짤 페어틀 생성기 ✨\n포토샵 없이 폰으로 10초 만에 만들기!\n\n#도파 #DOPA #페어틀 #움짤페어틀 #자캐 #드림\n`);
+      const text = encodeURIComponent(`움짤 페어틀 메이커로 만든 우리 페어 ✨\n#페어틀 #움짤페어틀 #자캐 #드림\n`);
       window.open(`https://twitter.com/intent/tweet?text=${text}&url=${encodeURIComponent(url)}`, '_blank');
     });
   </script>
