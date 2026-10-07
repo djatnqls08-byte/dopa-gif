@@ -6,9 +6,11 @@
   <title>16:9 감성 움짤 페어틀 메이커</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- gifshot (GIF 생성기) -->
+  <!-- gifshot (GIF 내보내기 인코더) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gifshot/0.3.2/gifshot.min.js"></script>
-  <!-- Pretendard 폰트 -->
+  <!-- gifuct-js (업로드한 GIF 프레임 디코더) -->
+  <script src="https://cdn.jsdelivr.net/npm/gifuct-js/dist/gifuct-js.min.js"></script>
+  <!-- Pretendard 감성 폰트 -->
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
   <style>
     body { font-family: "Pretendard", -apple-system, BlinkMacSystemFont, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -24,7 +26,7 @@
   <header class="border-b border-zinc-800/80 px-4 py-3 bg-[#09090b]/80 backdrop-blur sticky top-0 z-30 flex items-center justify-between">
     <div class="flex items-center space-x-2">
       <span class="text-xs font-semibold tracking-wider text-zinc-300 uppercase">16:9 Pair Gif Studio</span>
-      <span class="text-[10px] text-amber-400 bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 rounded font-mono">STABLE</span>
+      <span class="text-[10px] text-amber-400 bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 rounded font-mono">GIF SUPPORT</span>
     </div>
     <span class="text-xs text-zinc-500 font-mono">1920×1080 (16:9)</span>
   </header>
@@ -84,35 +86,44 @@
     <!-- 3. 모바일 탭 제어판 -->
     <div class="bg-zinc-900/80 rounded-2xl border border-zinc-800/80 overflow-hidden">
       <div class="grid grid-cols-3 border-b border-zinc-800 text-xs font-medium text-center">
-        <button id="tabBtn1" class="tab-btn py-3 border-b-2 border-amber-400 text-white font-semibold transition" data-tab="tab1">🖼️ 이미지</button>
+        <button id="tabBtn1" class="tab-btn py-3 border-b-2 border-amber-400 text-white font-semibold transition" data-tab="tab1">🖼️ 이미지·GIF</button>
         <button id="tabBtn2" class="tab-btn py-3 border-b-2 border-transparent text-zinc-400 hover:text-zinc-200 transition" data-tab="tab2">✍️ 대사·시계</button>
         <button id="tabBtn3" class="tab-btn py-3 border-b-2 border-transparent text-zinc-400 hover:text-zinc-200 transition" data-tab="tab3">🎨 테마 색상</button>
       </div>
 
       <div class="p-4 space-y-4">
         
-        <!-- [탭 1] 이미지 등록 -->
+        <!-- [탭 1] 이미지 & 움짤(GIF) 등록 -->
         <div id="tab1" class="tab-content space-y-3">
           <div>
-            <label class="block text-xs font-medium text-zinc-300 mb-1.5">메인 일러스트 (전체 배경)</label>
-            <input type="file" id="bgInput" accept="image/*" class="w-full text-xs text-zinc-400 file:mr-2.5 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-zinc-800 file:text-zinc-200 hover:file:bg-zinc-700 cursor-pointer">
+            <div class="flex justify-between items-center mb-1.5">
+              <label class="text-xs font-medium text-zinc-300">메인 배경 (JPG, PNG, GIF 지원)</label>
+              <span id="bgStatus" class="text-[10px] text-zinc-500 font-mono">기본</span>
+            </div>
+            <input type="file" id="bgInput" accept="image/*,.gif" class="w-full text-xs text-zinc-400 file:mr-2.5 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-zinc-800 file:text-zinc-200 hover:file:bg-zinc-700 cursor-pointer">
           </div>
           <div>
-            <label class="block text-xs font-medium text-zinc-300 mb-1.5">스마트폰 속 이미지 (선택 / 비우면 메인 이미지 자동 적용)</label>
-            <input type="file" id="phoneInput" accept="image/*" class="w-full text-xs text-zinc-400 file:mr-2.5 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-zinc-800 file:text-zinc-200 hover:file:bg-zinc-700 cursor-pointer">
+            <div class="flex justify-between items-center mb-1.5">
+              <label class="text-xs font-medium text-zinc-300">스마트폰 속 배경 (선택 / GIF 지원)</label>
+              <span id="phoneStatus" class="text-[10px] text-zinc-500 font-mono">기본 연동</span>
+            </div>
+            <input type="file" id="phoneInput" accept="image/*,.gif" class="w-full text-xs text-zinc-400 file:mr-2.5 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-zinc-800 file:text-zinc-200 hover:file:bg-zinc-700 cursor-pointer">
           </div>
+          <p class="text-[11px] text-zinc-500">
+            ✨ 움직이는 GIF를 업로드하면 캔버스 안에서도 자연스럽게 루프 재생됩니다.
+          </p>
         </div>
 
-        <!-- [탭 2] 대사 & 아이폰 시계 위치 & 동적 말풍선 -->
+        <!-- [탭 2] 대사 & 아이폰 시계 & 재생바 토글 & 말풍선 -->
         <div id="tab2" class="tab-content hidden space-y-4">
           
           <div>
-            <label class="text-[11px] text-zinc-400">인용 대사 캡슐 (라인 없는 미니멀 스타일)</label>
+            <label class="text-[11px] text-zinc-400">인용 대사 캡슐</label>
             <input type="text" id="quoteText" value="도파미너, 오랜만입니다." class="w-full mt-1 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-zinc-500">
           </div>
 
-          <!-- 아이폰 시계 시간 & 상/중/하 위치 버튼 -->
-          <div class="bg-zinc-950 p-2.5 rounded-xl border border-zinc-800 space-y-2">
+          <!-- 아이폰 시계 커스텀 & 폰 속 재생바 토글 -->
+          <div class="bg-zinc-950 p-3 rounded-xl border border-zinc-800 space-y-3">
             <div class="flex items-center justify-between">
               <span class="text-xs font-semibold text-zinc-300">📱 아이폰 시계 위치</span>
               <div class="flex items-center gap-1 bg-zinc-900 p-0.5 rounded-lg border border-zinc-800">
@@ -121,7 +132,16 @@
                 <button type="button" class="btn-clock-pos px-2 py-1 rounded text-[10px] font-bold transition text-zinc-400 hover:text-white" data-pos="bottom">⬇️ 하단</button>
               </div>
             </div>
-            <div class="grid grid-cols-2 gap-2">
+
+            <!-- 폰 화면 재생바 ON / OFF 토글 스위치 -->
+            <div class="flex items-center justify-between pt-1 border-t border-zinc-800/80">
+              <span class="text-[11px] text-zinc-400">폰 화면 속 재생바 표시</span>
+              <button type="button" id="btnTogglePhonePlayer" class="px-2.5 py-1 rounded-md text-[10px] font-bold transition bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                ON (표시 중)
+              </button>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 pt-1">
               <div>
                 <label class="text-[10px] text-zinc-500">표시 시간</label>
                 <input type="text" id="phoneTime" value="08:24" class="w-full mt-0.5 bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-white">
@@ -193,13 +213,15 @@
     const canvas = document.getElementById('previewCanvas');
     const ctx = canvas.getContext('2d');
 
-    let bgImg = null;
-    let phoneImg = null;
+    // 미디어 상태 객체 (정적 이미지 또는 움직이는 GIF 프레임 목록)
+    let bgMedia = null;     // { isGif: bool, img: HTMLImageElement, frames: Canvas[], width, height }
+    let phoneMedia = null;
     let animProgress = 0;
     let themeColor = '#f59e0b';
     let phoneClockPos = 'top';
+    let showPhonePlayer = true; // 폰 속 재생바 표시 여부
 
-    // ★ 오류 원천 차단: drawRoundRect 및 roundRect 완벽 정의
+    // 오류 없는 둥근 사각형 유틸
     function drawRoundRect(c, x, y, w, h, r) {
       if (typeof c.roundRect === 'function') {
         c.beginPath();
@@ -221,7 +243,7 @@
     }
     const roundRect = drawRoundRect;
 
-    // 기본 위치 (사용자가 배치한 구도 유지)
+    // 기본 위치
     const defaultElements = {
       quote:  { id: 'quote',  x: 580, y: 340, w: 240, h: 36 },
       chat:   { id: 'chat',   x: 30,  y: 90,  w: 255, h: 380 },
@@ -234,7 +256,6 @@
     let draggingItem = null;
     let dragOffset = { x: 0, y: 0 };
 
-    // 말풍선 목록
     let chatBubbles = [
       { side: 'left', text: '도파미너, 클로즈베타 기대되...' },
       { side: 'right', text: '네, 정말로요!' },
@@ -242,9 +263,11 @@
       { side: 'left', text: '훗, 언제가 좋을까요?' }
     ];
 
-    // DOM 참조
+    // DOM
     const bgInput = document.getElementById('bgInput');
     const phoneInput = document.getElementById('phoneInput');
+    const bgStatus = document.getElementById('bgStatus');
+    const phoneStatus = document.getElementById('phoneStatus');
     const quoteText = document.getElementById('quoteText');
     const senderName = document.getElementById('senderName');
     const phoneTime = document.getElementById('phoneTime');
@@ -255,6 +278,20 @@
     const bubblesContainer = document.getElementById('bubblesContainer');
     const btnAddBubble = document.getElementById('btnAddBubble');
     const btnResetPositions = document.getElementById('btnResetPositions');
+    const btnTogglePhonePlayer = document.getElementById('btnTogglePhonePlayer');
+
+    // 폰 화면 속 재생바 토글
+    btnTogglePhonePlayer.addEventListener('click', () => {
+      showPhonePlayer = !showPhonePlayer;
+      if (showPhonePlayer) {
+        btnTogglePhonePlayer.textContent = 'ON (표시 중)';
+        btnTogglePhonePlayer.className = 'px-2.5 py-1 rounded-md text-[10px] font-bold transition bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+      } else {
+        btnTogglePhonePlayer.textContent = 'OFF (숨김)';
+        btnTogglePhonePlayer.className = 'px-2.5 py-1 rounded-md text-[10px] font-bold transition bg-zinc-800 text-zinc-400 border border-zinc-700';
+      }
+      draw();
+    });
 
     // 시계 위치 토글
     document.querySelectorAll('.btn-clock-pos').forEach(btn => {
@@ -324,7 +361,6 @@
       renderBubbleInputs();
       draw();
     });
-
     renderBubbleInputs();
 
     // 탭 전환
@@ -360,28 +396,101 @@
       draw();
     });
 
-    // 이미지 로더
-    function bindImage(inputEl, callback) {
-      inputEl.addEventListener('change', () => {
-        if (inputEl.files && inputEl.files[0]) {
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            const img = new Image();
-            img.onload = () => { callback(img); draw(); };
-            img.src = e.target.result;
-          };
-          reader.readAsDataURL(inputEl.files[0]);
+    // ================= GIF & 정적 이미지 하이브리드 로더 =================
+    async function loadMediaFile(file, statusEl) {
+      if (!file) return null;
+      const isGif = file.type === 'image/gif' || file.name.toLowerCase().endsWith('.gif');
+      if (statusEl) statusEl.textContent = isGif ? 'GIF 디코딩 중...' : '이미지 로드 중...';
+
+      if (isGif) {
+        try {
+          const buffer = await file.arrayBuffer();
+          const gifLib = window.GIF || window.gifuct;
+          if (gifLib && gifLib.parseGIF) {
+            const parsed = gifLib.parseGIF(buffer);
+            const frames = gifLib.decompressFrames(parsed, true);
+            if (frames && frames.length > 0) {
+              const canvasList = [];
+              const tempCanvas = document.createElement('canvas');
+              const tempCtx = tempCanvas.getContext('2d');
+              tempCanvas.width = parsed.lsd.width;
+              tempCanvas.height = parsed.lsd.height;
+
+              frames.forEach(frame => {
+                const fCanvas = document.createElement('canvas');
+                fCanvas.width = tempCanvas.width;
+                fCanvas.height = tempCanvas.height;
+                const fCtx = fCanvas.getContext('2d');
+
+                const patchCanvas = document.createElement('canvas');
+                patchCanvas.width = frame.dims.width;
+                patchCanvas.height = frame.dims.height;
+                const pCtx = patchCanvas.getContext('2d');
+                const imgData = pCtx.createImageData(frame.dims.width, frame.dims.height);
+                imgData.data.set(frame.patch);
+                pCtx.putImageData(imgData, 0, 0);
+
+                if (frame.disposalType === 2) {
+                  tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+                }
+                tempCtx.drawImage(patchCanvas, frame.dims.left, frame.dims.top);
+                fCtx.drawImage(tempCanvas, 0, 0);
+                canvasList.push(fCanvas);
+              });
+
+              if (statusEl) statusEl.textContent = `움짤 GIF (${canvasList.length}F)`;
+              return { isGif: true, frames: canvasList, width: tempCanvas.width, height: tempCanvas.height };
+            }
+          }
+        } catch (err) {
+          console.warn('GIF decode fallback:', err);
         }
+      }
+
+      // 일반 이미지 또는 GIF 파싱 fallback
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            if (statusEl) statusEl.textContent = isGif ? '정적 GIF' : '정적 이미지';
+            resolve({ isGif: false, img, width: img.width, height: img.height });
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
       });
     }
-    bindImage(bgInput, (img) => bgImg = img);
-    bindImage(phoneInput, (img) => phoneImg = img);
+
+    bgInput.addEventListener('change', async () => {
+      if (bgInput.files && bgInput.files[0]) {
+        bgMedia = await loadMediaFile(bgInput.files[0], bgStatus);
+        draw();
+      }
+    });
+
+    phoneInput.addEventListener('change', async () => {
+      if (phoneInput.files && phoneInput.files[0]) {
+        phoneMedia = await loadMediaFile(phoneInput.files[0], phoneStatus);
+        draw();
+      }
+    });
+
+    // 현재 애니메이션 진행도(0.0~1.0)에 맞는 프레임 추출 함수
+    function getDrawableSource(media, prog) {
+      if (!media) return null;
+      if (media.isGif && media.frames && media.frames.length > 0) {
+        const frameIdx = Math.floor(prog * media.frames.length) % media.frames.length;
+        return media.frames[frameIdx];
+      }
+      return media.img;
+    }
 
     [quoteText, senderName, phoneTime, songTitle, artistName].forEach(el => {
       el.addEventListener('input', () => draw());
     });
 
-    // 마우스 / 터치 드래그 좌표 계산 & 클릭한 요소 맨 앞으로 가져오기 (Smart Z-index)
+    // 드래그 좌표 및 스마트 Z-Index
     function getCanvasCoords(e) {
       const rect = canvas.getBoundingClientRect();
       const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -402,7 +511,6 @@
           draggingItem = key;
           dragOffset.x = pos.x - item.x;
           dragOffset.y = pos.y - item.y;
-          // 클릭한 요소를 맨 앞으로 이동
           renderOrder.splice(i, 1);
           renderOrder.push(key);
           if (e.cancelable) e.preventDefault();
@@ -434,16 +542,17 @@
     window.addEventListener('touchmove', handleDragMove, { passive: false });
     window.addEventListener('touchend', handleDragEnd);
 
-    // ================= 메인 렌더링 루프 =================
+    // ================= 메인 렌더링 =================
     function draw(prog = animProgress) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // 1. 전체 배경 일러스트
-      if (bgImg) {
-        const scale = Math.max(canvas.width / bgImg.width, canvas.height / bgImg.height);
-        const w = bgImg.width * scale;
-        const h = bgImg.height * scale;
-        ctx.drawImage(bgImg, (canvas.width - w) / 2, (canvas.height - h) / 2, w, h);
+      // 1. 전체 배경 (정적 이미지 또는 움직이는 GIF 프레임)
+      const bgSource = getDrawableSource(bgMedia, prog);
+      if (bgSource && bgMedia) {
+        const scale = Math.max(canvas.width / bgMedia.width, canvas.height / bgMedia.height);
+        const w = bgMedia.width * scale;
+        const h = bgMedia.height * scale;
+        ctx.drawImage(bgSource, (canvas.width - w) / 2, (canvas.height - h) / 2, w, h);
       } else {
         const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
         grad.addColorStop(0, '#1c1924');
@@ -455,10 +564,10 @@
         ctx.fillStyle = '#94a3b8';
         ctx.font = 'bold 15px Pretendard';
         ctx.textAlign = 'center';
-        ctx.fillText('이미지 탭에서 페어 일러스트를 등록해주세요', 300, 270);
+        ctx.fillText('이미지 탭에서 페어 일러스트/GIF를 등록해주세요', 300, 270);
       }
 
-      // 우측 가독성 비네팅
+      // 우측 비네팅
       const rightVignette = ctx.createLinearGradient(200, 0, canvas.width, 0);
       rightVignette.addColorStop(0, 'rgba(10, 12, 18, 0.05)');
       rightVignette.addColorStop(0.5, 'rgba(10, 12, 18, 0.35)');
@@ -466,10 +575,10 @@
       ctx.fillStyle = rightVignette;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // 2. 글리터 별빛 (얼굴 영역 250~600 배제하고 외곽 모서리에만 배치)
+      // 2. 글리터 별빛 (얼굴 안 가리는 외곽 안전지대)
       renderGlitterStars(prog);
 
-      // 3. 레이어 순서대로 렌더링
+      // 3. 레이어 드로잉
       renderOrder.forEach(key => {
         if (key === 'phone') renderIPhone16(prog);
         if (key === 'chat') renderGlassChatWindow(prog);
@@ -477,7 +586,7 @@
         if (key === 'quote') renderTopQuotePill();
       });
 
-      // 드래그 가이드
+      // 드래그 가이드 점선
       if (draggingItem) {
         const it = elements[draggingItem];
         ctx.save();
@@ -489,7 +598,7 @@
         ctx.restore();
       }
 
-      // 좌측 하단 미니멀 도파 워터마크
+      // 워터마크
       ctx.save();
       ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
       ctx.font = '10px monospace';
@@ -498,12 +607,12 @@
       ctx.restore();
     }
 
-    // 외곽 안전 모서리 별빛
+    // 외곽 반짝이
     const sparkles = [
-      { x: 80,  y: 50,  s: 7, p: 0.1 },  // 좌상단
-      { x: 110, y: 500, s: 7, p: 0.7 },  // 좌하단
-      { x: 600, y: 505, s: 8, p: 0.3 },  // 하단 손 아래 여백
-      { x: 920, y: 50,  s: 6, p: 0.85 }  // 우상단
+      { x: 80,  y: 50,  s: 7, p: 0.1 },
+      { x: 110, y: 500, s: 7, p: 0.7 },
+      { x: 600, y: 505, s: 8, p: 0.3 },
+      { x: 920, y: 50,  s: 6, p: 0.85 }
     ];
     function renderGlitterStars(prog) {
       sparkles.forEach(st => {
@@ -524,7 +633,7 @@
       });
     }
 
-    // 인용 대사 캡슐 (요청: 테두리 라인 없음)
+    // 인용 대사 캡슐 (테두리 라인 없음)
     function renderTopQuotePill() {
       const it = elements.quote;
       const text = quoteText.value.trim();
@@ -533,7 +642,7 @@
       ctx.save();
       drawRoundRect(ctx, it.x, it.y, it.w, it.h, it.h / 2);
       ctx.fillStyle = 'rgba(15, 17, 24, 0.75)';
-      ctx.fill(); // 테두리 stroke 완전 제거
+      ctx.fill();
 
       ctx.fillStyle = themeColor;
       ctx.font = 'bold 12px Pretendard';
@@ -546,7 +655,7 @@
       ctx.restore();
     }
 
-    // 메신저 창 (요청: '...' 타이핑 후 순차 팝업, 라인 없음)
+    // 메신저 창 (요청: 타이핑 & 팝업 속도 차분하게 감속)
     function renderGlassChatWindow(prog) {
       const it = elements.chat;
 
@@ -577,10 +686,29 @@
       ctx.textAlign = 'center';
       ctx.fillText(senderName.value, hx + hw / 2 + 5, hy + 19);
 
-      // 말풍선 순차 등장 로직
+      // 여유로운 말풍선 전환 타이밍:
+      // 전체 0.0 ~ 0.65 동안 한 개씩 차례대로 타이핑되고 나타남
+      // 0.65 ~ 1.0 (루프의 35%) 동안은 전체 완성 상태로 차분히 유지
       const total = chatBubbles.length;
-      let visibleCount = Math.floor(prog / (0.65 / total)) + 1;
-      if (visibleCount > total || prog >= 0.65) visibleCount = total;
+      const revealWindow = 0.65;
+      const stepDuration = revealWindow / total;
+      
+      let visibleCount = 0;
+      let typingIndex = -1;
+
+      if (prog >= revealWindow) {
+        visibleCount = total;
+      } else {
+        const currentStep = prog / stepDuration;
+        visibleCount = Math.floor(currentStep);
+        const subProgress = currentStep - visibleCount;
+        // 각 스텝의 전반부 45% 동안 점 3개 타이핑 모션 표시
+        if (subProgress < 0.45 && visibleCount < total) {
+          typingIndex = visibleCount;
+        } else {
+          visibleCount = Math.min(total, visibleCount + 1);
+        }
+      }
 
       let currentY = it.y + 58;
 
@@ -591,7 +719,6 @@
         const bx = isLeft ? (it.x + 14) : (it.x + it.w - bw - 14);
 
         if (idx < visibleCount) {
-          // 완성된 말풍선 (테두리 라인 없음)
           drawRoundRect(ctx, bx, currentY, bw, bh, 12);
           if (isLeft) {
             ctx.fillStyle = '#ffffff';
@@ -608,8 +735,8 @@
             ctx.textAlign = 'left';
             ctx.fillText(bubble.text.length > 15 ? bubble.text.slice(0, 15) + '...' : bubble.text, bx + 10, currentY + 21);
           }
-        } else if (idx === visibleCount && prog < 0.65) {
-          // '...' 타이핑 중인 인디케이터
+        } else if (idx === typingIndex) {
+          // 타이핑 중 '...'
           const tw = 48, th = 28;
           const tx = isLeft ? (it.x + 14) : (it.x + it.w - tw - 14);
           drawRoundRect(ctx, tx, currentY + 3, tw, th, 14);
@@ -617,7 +744,7 @@
           ctx.fill();
 
           for (let d = 0; d < 3; d++) {
-            const bounce = Math.sin((prog * 12 + d * 0.4) * Math.PI) * 2;
+            const bounce = Math.sin((prog * 20 + d * 0.5) * Math.PI) * 2;
             ctx.beginPath();
             ctx.arc(tx + 14 + d * 10, currentY + 17 + bounce, 2, 0, Math.PI * 2);
             ctx.fillStyle = isLeft ? '#64748b' : '#0f172a';
@@ -661,11 +788,13 @@
       drawRoundRect(ctx, it.x + 12, it.y + 12, 38, 38, 8);
       ctx.fillStyle = '#334155';
       ctx.fill();
-      if (bgImg) {
+
+      const bgSource = getDrawableSource(bgMedia, prog);
+      if (bgSource) {
         ctx.save();
         drawRoundRect(ctx, it.x + 12, it.y + 12, 38, 38, 8);
         ctx.clip();
-        ctx.drawImage(bgImg, it.x + 12, it.y + 12, 38, 38);
+        ctx.drawImage(bgSource, it.x + 12, it.y + 12, 38, 38);
         ctx.restore();
       }
 
@@ -709,7 +838,7 @@
       ctx.restore();
     }
 
-    // 아이폰 목업 (시계 위치 3단 전환 반영)
+    // 아이폰 목업 (요청: 폰 화면 GIF 렌더링 + 재생바 하단 고정 및 ON/OFF 토글)
     function renderIPhone16(prog) {
       const it = elements.phone;
 
@@ -731,11 +860,13 @@
       drawRoundRect(ctx, it.x + 5, it.y + 5, it.w - 10, it.h - 10, 32);
       ctx.clip();
 
-      const targetImg = phoneImg || bgImg;
-      if (targetImg) {
-        const s = Math.max((it.w - 10) / targetImg.width, (it.h - 10) / targetImg.height);
-        const iw = targetImg.width * s, ih = targetImg.height * s;
-        ctx.drawImage(targetImg, it.x + 5 + (it.w - 10 - iw) / 2, it.y + 5 + (it.h - 10 - ih) / 2, iw, ih);
+      // 폰 내부 미디어 (GIF 또는 정적 이미지)
+      const curMedia = phoneMedia || bgMedia;
+      const phoneSource = getDrawableSource(curMedia, prog);
+      if (phoneSource && curMedia) {
+        const s = Math.max((it.w - 10) / curMedia.width, (it.h - 10) / curMedia.height);
+        const iw = curMedia.width * s, ih = curMedia.height * s;
+        ctx.drawImage(phoneSource, it.x + 5 + (it.w - 10 - iw) / 2, it.y + 5 + (it.h - 10 - ih) / 2, iw, ih);
         ctx.fillStyle = 'rgba(10, 12, 18, 0.25)';
         ctx.fillRect(it.x + 5, it.y + 5, it.w - 10, it.h - 10);
       } else {
@@ -760,38 +891,38 @@
       ctx.textAlign = 'center';
       ctx.fillText(timeVal, it.x + it.w / 2, clockY);
 
-      // 하단 플레이어 미니 바 (시계가 하단일 때는 상단으로 올려 겹침 방지)
-      const ipY = (phoneClockPos === 'bottom') ? (it.y + 40) : (it.y + it.h - 60);
-      const ipX = it.x + 14, ipW = it.w - 28, ipH = 38;
+      // 하단 플레이어 미니 바 (요청: ON/OFF 스위치에 따라 렌더링, 위치는 항상 하단 고정)
+      if (showPhonePlayer) {
+        const ipX = it.x + 14, ipY = it.y + it.h - 60, ipW = it.w - 28, ipH = 38;
+        drawRoundRect(ctx, ipX, ipY, ipW, ipH, 12);
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+        ctx.stroke();
 
-      drawRoundRect(ctx, ipX, ipY, ipW, ipH, 12);
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.82)';
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-      ctx.stroke();
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 9.5px Pretendard';
+        ctx.textAlign = 'left';
+        ctx.fillText(songTitle.value.length > 11 ? songTitle.value.slice(0, 11) + '..' : songTitle.value, ipX + 10, ipY + 18);
 
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 9.5px Pretendard';
-      ctx.textAlign = 'left';
-      ctx.fillText(songTitle.value.length > 11 ? songTitle.value.slice(0, 11) + '..' : songTitle.value, ipX + 10, ipY + 18);
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '8px Pretendard';
+        ctx.fillText(artistName.value.length > 13 ? artistName.value.slice(0, 13) + '..' : artistName.value, ipX + 10, ipY + 30);
 
-      ctx.fillStyle = '#94a3b8';
-      ctx.font = '8px Pretendard';
-      ctx.fillText(artistName.value.length > 13 ? artistName.value.slice(0, 13) + '..' : artistName.value, ipX + 10, ipY + 30);
-
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '10px sans-serif';
-      ctx.fillText('▶', ipX + ipW - 18, ipY + 23);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '10px sans-serif';
+        ctx.fillText('▶', ipX + ipW - 18, ipY + 23);
+      }
 
       ctx.restore();
     }
 
-    // 15fps 실시간 프리뷰 루프
+    // 템포 최적화: 약 7초 주기로 부드럽고 여유롭게 회전
     draw(0);
     setInterval(() => {
-      animProgress = (animProgress + 0.04) % 1;
+      animProgress = (animProgress + 0.007) % 1;
       draw(animProgress);
-    }, 100);
+    }, 50);
 
     // ================= 고화질 내보내기 =================
     const btnGenerateGIF = document.getElementById('btnGenerateGIF');
@@ -804,17 +935,17 @@
     const btnDownload = document.getElementById('btnDownload');
     const btnShareX = document.getElementById('btnShareX');
 
-    // 1. 고화질 GIF 내보내기 (14프레임 매끄러운 타이핑)
+    // 1. 고화질 GIF 내보내기
     btnGenerateGIF.addEventListener('click', () => {
       btnGenerateGIF.disabled = true;
       btnGenerateMP4.disabled = true;
       loadingStatus.classList.remove('hidden');
       resultArea.classList.add('hidden');
       progressBar.style.width = '15%';
-      statusMsg.textContent = '타이핑 프레임 캡처 중...';
+      statusMsg.textContent = '부드러운 프레임 캡처 중...';
 
       const frames = [];
-      const totalFrames = 14;
+      const totalFrames = 16;
       for (let i = 0; i < totalFrames; i++) {
         draw(i / totalFrames);
         frames.push(canvas.toDataURL('image/png'));
@@ -827,7 +958,7 @@
         images: frames,
         gifWidth: 960,
         gifHeight: 540,
-        interval: 0.12,
+        interval: 0.16,
         sampleInterval: 2,
         numWorkers: 2
       }, function(obj) {
@@ -895,7 +1026,7 @@
       recorder.start();
 
       let currentFrame = 0;
-      const totalSteps = 50;
+      const totalSteps = 60;
       const interval = setInterval(() => {
         draw(currentFrame / totalSteps);
         currentFrame++;
@@ -905,7 +1036,7 @@
           clearInterval(interval);
           recorder.stop();
         }
-      }, 33);
+      }, 50);
     });
 
     // 트위터 공유
