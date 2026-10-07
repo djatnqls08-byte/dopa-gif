@@ -8,7 +8,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- gifshot (GIF 생성기) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gifshot/0.3.2/gifshot.min.js"></script>
-  <!-- Pretendard 감성 폰트 -->
+  <!-- Pretendard 폰트 -->
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
   <style>
     body { font-family: "Pretendard", -apple-system, BlinkMacSystemFont, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -24,7 +24,7 @@
   <header class="border-b border-zinc-800/80 px-4 py-3 bg-[#09090b]/80 backdrop-blur sticky top-0 z-30 flex items-center justify-between">
     <div class="flex items-center space-x-2">
       <span class="text-xs font-semibold tracking-wider text-zinc-300 uppercase">16:9 Pair Gif Studio</span>
-      <span class="text-[10px] text-amber-400 bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 rounded font-mono">PRO</span>
+      <span class="text-[10px] text-amber-400 bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 rounded font-mono">STABLE</span>
     </div>
     <span class="text-xs text-zinc-500 font-mono">1920×1080 (16:9)</span>
   </header>
@@ -36,7 +36,7 @@
       <div class="w-full flex items-center justify-between pb-2 px-1 text-[11px] text-zinc-400">
         <span class="flex items-center gap-1.5">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-          💡 <b>폰·대화창·플레이어를 터치해서 드래그해보세요!</b>
+          💡 <b>화면의 폰·대화창·플레이어를 터치해서 드래그해보세요!</b>
         </span>
         <button id="btnResetPositions" class="text-zinc-500 hover:text-zinc-300 text-[10px] underline">위치 초기화</button>
       </div>
@@ -83,7 +83,6 @@
 
     <!-- 3. 모바일 탭 제어판 -->
     <div class="bg-zinc-900/80 rounded-2xl border border-zinc-800/80 overflow-hidden">
-      <!-- 탭 바 -->
       <div class="grid grid-cols-3 border-b border-zinc-800 text-xs font-medium text-center">
         <button id="tabBtn1" class="tab-btn py-3 border-b-2 border-amber-400 text-white font-semibold transition" data-tab="tab1">🖼️ 이미지</button>
         <button id="tabBtn2" class="tab-btn py-3 border-b-2 border-transparent text-zinc-400 hover:text-zinc-200 transition" data-tab="tab2">✍️ 대사·시계</button>
@@ -107,7 +106,6 @@
         <!-- [탭 2] 대사 & 아이폰 시계 위치 & 동적 말풍선 -->
         <div id="tab2" class="tab-content hidden space-y-4">
           
-          <!-- 인용 대사 -->
           <div>
             <label class="text-[11px] text-zinc-400">인용 대사 캡슐 (라인 없는 미니멀 스타일)</label>
             <input type="text" id="quoteText" value="도파미너, 오랜만입니다." class="w-full mt-1 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-zinc-500">
@@ -116,8 +114,7 @@
           <!-- 아이폰 시계 시간 & 상/중/하 위치 버튼 -->
           <div class="bg-zinc-950 p-2.5 rounded-xl border border-zinc-800 space-y-2">
             <div class="flex items-center justify-between">
-              <span class="text-xs font-semibold text-zinc-300">📱 아이폰 시계 커스텀</span>
-              <!-- 시계 위치 변경 버튼 3종 -->
+              <span class="text-xs font-semibold text-zinc-300">📱 아이폰 시계 위치</span>
               <div class="flex items-center gap-1 bg-zinc-900 p-0.5 rounded-lg border border-zinc-800">
                 <button type="button" class="btn-clock-pos px-2 py-1 rounded text-[10px] font-bold transition bg-amber-500/20 text-amber-300" data-pos="top">⬆️ 상단</button>
                 <button type="button" class="btn-clock-pos px-2 py-1 rounded text-[10px] font-bold transition text-zinc-400 hover:text-white" data-pos="middle">⏺️ 중단</button>
@@ -136,10 +133,10 @@
             </div>
           </div>
 
-          <!-- 동적 말풍선 리스트 & 타이핑 모션 토글 -->
+          <!-- 동적 말풍선 리스트 -->
           <div class="space-y-2 border-t border-zinc-800 pt-3">
             <div class="flex items-center justify-between">
-              <span class="text-xs font-semibold text-zinc-300">💬 메신저 말풍선</span>
+              <span class="text-xs font-semibold text-zinc-300">💬 메신저 말풍선 목록</span>
               <button id="btnAddBubble" class="px-2.5 py-1 bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 text-[11px] font-medium rounded-md transition border border-amber-500/30">
                 + 말풍선 추가
               </button>
@@ -200,9 +197,9 @@
     let phoneImg = null;
     let animProgress = 0;
     let themeColor = '#f59e0b';
-    let phoneClockPos = 'top'; // 'top' | 'middle' | 'bottom'
+    let phoneClockPos = 'top';
 
-    // 안전한 둥근 사각형 렌더러
+    // ★ 오류 원천 차단: drawRoundRect 및 roundRect 완벽 정의
     function drawRoundRect(c, x, y, w, h, r) {
       if (typeof c.roundRect === 'function') {
         c.beginPath();
@@ -222,8 +219,9 @@
         c.closePath();
       }
     }
+    const roundRect = drawRoundRect;
 
-    // 기본 위치 (사용자가 첨부한 이미지 구도 기반)
+    // 기본 위치 (사용자가 배치한 구도 유지)
     const defaultElements = {
       quote:  { id: 'quote',  x: 580, y: 340, w: 240, h: 36 },
       chat:   { id: 'chat',   x: 30,  y: 90,  w: 255, h: 380 },
@@ -231,7 +229,6 @@
       phone:  { id: 'phone',  x: 675, y: 40,  w: 235, h: 460 }
     };
     let elements = JSON.parse(JSON.stringify(defaultElements));
-    // 렌더링 순서(Z-index): 뒤 -> 앞
     let renderOrder = ['phone', 'chat', 'player', 'quote'];
 
     let draggingItem = null;
@@ -259,7 +256,7 @@
     const btnAddBubble = document.getElementById('btnAddBubble');
     const btnResetPositions = document.getElementById('btnResetPositions');
 
-    // 시계 위치 버튼
+    // 시계 위치 토글
     document.querySelectorAll('.btn-clock-pos').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.btn-clock-pos').forEach(b => {
@@ -384,7 +381,7 @@
       el.addEventListener('input', () => draw());
     });
 
-    // 드래그 좌표 계산 & 클릭한 요소 맨 앞으로 가져오기 (Smart Z-index)
+    // 마우스 / 터치 드래그 좌표 계산 & 클릭한 요소 맨 앞으로 가져오기 (Smart Z-index)
     function getCanvasCoords(e) {
       const rect = canvas.getBoundingClientRect();
       const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -397,7 +394,6 @@
 
     function handleDragStart(e) {
       const pos = getCanvasCoords(e);
-      // 가장 위에 있는 요소부터 역순 검색
       for (let i = renderOrder.length - 1; i >= 0; i--) {
         const key = renderOrder[i];
         const item = elements[key];
@@ -406,7 +402,7 @@
           draggingItem = key;
           dragOffset.x = pos.x - item.x;
           dragOffset.y = pos.y - item.y;
-          // 선택된 요소를 맨 위 레이어로 이동
+          // 클릭한 요소를 맨 앞으로 이동
           renderOrder.splice(i, 1);
           renderOrder.push(key);
           if (e.cancelable) e.preventDefault();
@@ -438,7 +434,7 @@
     window.addEventListener('touchmove', handleDragMove, { passive: false });
     window.addEventListener('touchend', handleDragEnd);
 
-    // ================= 메인 렌더링 =================
+    // ================= 메인 렌더링 루프 =================
     function draw(prog = animProgress) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -470,10 +466,10 @@
       ctx.fillStyle = rightVignette;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // 2. 글리터 별빛 (얼굴 부위 완전 제외, 외곽 여백만 배치)
+      // 2. 글리터 별빛 (얼굴 영역 250~600 배제하고 외곽 모서리에만 배치)
       renderGlitterStars(prog);
 
-      // 3. 레이어 순서대로 렌더링 (Z-index 적용)
+      // 3. 레이어 순서대로 렌더링
       renderOrder.forEach(key => {
         if (key === 'phone') renderIPhone16(prog);
         if (key === 'chat') renderGlassChatWindow(prog);
@@ -481,7 +477,7 @@
         if (key === 'quote') renderTopQuotePill();
       });
 
-      // 드래그 중인 오브젝트 하이라이트 점선 가이드
+      // 드래그 가이드
       if (draggingItem) {
         const it = elements[draggingItem];
         ctx.save();
@@ -502,12 +498,12 @@
       ctx.restore();
     }
 
-    // 십자 반짝이 (얼굴 영역 300~550, 50~450 배제)
+    // 외곽 안전 모서리 별빛
     const sparkles = [
-      { x: 90,  y: 60,  s: 7, p: 0.1 },  // 좌상단 모서리
-      { x: 120, y: 500, s: 7, p: 0.7 },  // 좌하단 바닥
-      { x: 620, y: 505, s: 8, p: 0.3 },  // 하단 손 아래 여백
-      { x: 920, y: 50,  s: 6, p: 0.85 }  // 우상단 모서리
+      { x: 80,  y: 50,  s: 7, p: 0.1 },  // 좌상단
+      { x: 110, y: 500, s: 7, p: 0.7 },  // 좌하단
+      { x: 600, y: 505, s: 8, p: 0.3 },  // 하단 손 아래 여백
+      { x: 920, y: 50,  s: 6, p: 0.85 }  // 우상단
     ];
     function renderGlitterStars(prog) {
       sparkles.forEach(st => {
@@ -528,7 +524,7 @@
       });
     }
 
-    // 인용 대사 캡슐 (요청: 외곽 테두리 라인 완전 제거)
+    // 인용 대사 캡슐 (요청: 테두리 라인 없음)
     function renderTopQuotePill() {
       const it = elements.quote;
       const text = quoteText.value.trim();
@@ -536,11 +532,9 @@
 
       ctx.save();
       drawRoundRect(ctx, it.x, it.y, it.w, it.h, it.h / 2);
-      // 테두리 라인 없이 부드러운 반투명 블러 느낌만 연출
       ctx.fillStyle = 'rgba(15, 17, 24, 0.75)';
-      ctx.fill();
+      ctx.fill(); // 테두리 stroke 완전 제거
 
-      // 인용 부호
       ctx.fillStyle = themeColor;
       ctx.font = 'bold 12px Pretendard';
       ctx.textAlign = 'left';
@@ -552,7 +546,7 @@
       ctx.restore();
     }
 
-    // 메신저 창 (요청: '...' 타이핑 애니메이션 후 순차적 말풍선 등장)
+    // 메신저 창 (요청: '...' 타이핑 후 순차 팝업, 라인 없음)
     function renderGlassChatWindow(prog) {
       const it = elements.chat;
 
@@ -561,7 +555,6 @@
       ctx.shadowBlur = 24;
       ctx.shadowOffsetY = 10;
 
-      // 본체 (테두리 라인은 얇고 부드럽게)
       drawRoundRect(ctx, it.x, it.y, it.w, it.h, 22);
       ctx.fillStyle = 'rgba(255, 255, 255, 0.82)';
       ctx.fill();
@@ -585,10 +578,9 @@
       ctx.fillText(senderName.value, hx + hw / 2 + 5, hy + 19);
 
       // 말풍선 순차 등장 로직
-      // prog(0.0~1.0)를 구간으로 쪼개어 나타나게 함. 0.7 이후에는 완성형 대화 유지
       const total = chatBubbles.length;
-      let visibleCount = Math.floor(prog / (0.7 / total)) + 1;
-      if (visibleCount > total) visibleCount = total;
+      let visibleCount = Math.floor(prog / (0.65 / total)) + 1;
+      if (visibleCount > total || prog >= 0.65) visibleCount = total;
 
       let currentY = it.y + 58;
 
@@ -599,7 +591,7 @@
         const bx = isLeft ? (it.x + 14) : (it.x + it.w - bw - 14);
 
         if (idx < visibleCount) {
-          // 이미 나타난 말풍선 (테두리 라인 없음)
+          // 완성된 말풍선 (테두리 라인 없음)
           drawRoundRect(ctx, bx, currentY, bw, bh, 12);
           if (isLeft) {
             ctx.fillStyle = '#ffffff';
@@ -616,15 +608,14 @@
             ctx.textAlign = 'left';
             ctx.fillText(bubble.text.length > 15 ? bubble.text.slice(0, 15) + '...' : bubble.text, bx + 10, currentY + 21);
           }
-        } else if (idx === visibleCount && prog < 0.7) {
-          // 현재 타이핑 중인 '...' 인디케이터 말풍선
+        } else if (idx === visibleCount && prog < 0.65) {
+          // '...' 타이핑 중인 인디케이터
           const tw = 48, th = 28;
           const tx = isLeft ? (it.x + 14) : (it.x + it.w - tw - 14);
           drawRoundRect(ctx, tx, currentY + 3, tw, th, 14);
           ctx.fillStyle = isLeft ? '#ffffff' : themeColor;
           ctx.fill();
 
-          // 퐁퐁 튀는 점 3개
           for (let d = 0; d < 3; d++) {
             const bounce = Math.sin((prog * 12 + d * 0.4) * Math.PI) * 2;
             ctx.beginPath();
@@ -718,7 +709,7 @@
       ctx.restore();
     }
 
-    // 아이폰 목업 (요청: 시계 상단/중단/하단 전환 반영)
+    // 아이폰 목업 (시계 위치 3단 전환 반영)
     function renderIPhone16(prog) {
       const it = elements.phone;
 
@@ -753,7 +744,7 @@
       }
 
       // 다이내믹 아일랜드
-      roundRect(ctx, it.x + it.w / 2 - 32, it.y + 14, 64, 16, 8);
+      drawRoundRect(ctx, it.x + it.w / 2 - 32, it.y + 14, 64, 16, 8);
       ctx.fillStyle = '#000000';
       ctx.fill();
 
@@ -769,28 +760,28 @@
       ctx.textAlign = 'center';
       ctx.fillText(timeVal, it.x + it.w / 2, clockY);
 
-      // 하단 플레이어 미니 바 (시계가 하단일 때는 숨김 처리하여 겹침 방지)
-      if (phoneClockPos !== 'bottom') {
-        const ipX = it.x + 14, ipY = it.y + it.h - 60, ipW = it.w - 28, ipH = 38;
-        drawRoundRect(ctx, ipX, ipY, ipW, ipH, 12);
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.82)';
-        ctx.fill();
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-        ctx.stroke();
+      // 하단 플레이어 미니 바 (시계가 하단일 때는 상단으로 올려 겹침 방지)
+      const ipY = (phoneClockPos === 'bottom') ? (it.y + 40) : (it.y + it.h - 60);
+      const ipX = it.x + 14, ipW = it.w - 28, ipH = 38;
 
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 9.5px Pretendard';
-        ctx.textAlign = 'left';
-        ctx.fillText(songTitle.value.length > 11 ? songTitle.value.slice(0, 11) + '..' : songTitle.value, ipX + 10, ipY + 18);
+      drawRoundRect(ctx, ipX, ipY, ipW, ipH, 12);
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.82)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+      ctx.stroke();
 
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = '8px Pretendard';
-        ctx.fillText(artistName.value.length > 13 ? artistName.value.slice(0, 13) + '..' : artistName.value, ipX + 10, ipY + 30);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 9.5px Pretendard';
+      ctx.textAlign = 'left';
+      ctx.fillText(songTitle.value.length > 11 ? songTitle.value.slice(0, 11) + '..' : songTitle.value, ipX + 10, ipY + 18);
 
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '10px sans-serif';
-        ctx.fillText('▶', ipX + ipW - 18, ipY + 23);
-      }
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '8px Pretendard';
+      ctx.fillText(artistName.value.length > 13 ? artistName.value.slice(0, 13) + '..' : artistName.value, ipX + 10, ipY + 30);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '10px sans-serif';
+      ctx.fillText('▶', ipX + ipW - 18, ipY + 23);
 
       ctx.restore();
     }
@@ -802,7 +793,7 @@
       draw(animProgress);
     }, 100);
 
-    // ================= 고화질 내보내기 (GIF & MP4) =================
+    // ================= 고화질 내보내기 =================
     const btnGenerateGIF = document.getElementById('btnGenerateGIF');
     const btnGenerateMP4 = document.getElementById('btnGenerateMP4');
     const loadingStatus = document.getElementById('loadingStatus');
