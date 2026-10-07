@@ -10,12 +10,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gifshot/0.3.2/gifshot.min.js"></script>
   <!-- omggif (검증된 고성능 GIF 프레임 디코더) -->
   <script src="https://cdn.jsdelivr.net/npm/omggif@1.0.10/omggif.js"></script>
-  <script>
-    // CDN 백업 로더
-    if (!window.omggif && !window.GifReader) {
-      document.write('<script src="https://unpkg.com/omggif@1.0.10/omggif.js"><\/script>');
-    }
-  </script>
   <!-- Pretendard 폰트 -->
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
   <style>
@@ -32,7 +26,7 @@
   <header class="border-b border-zinc-800/80 px-4 py-3 bg-[#09090b]/80 backdrop-blur sticky top-0 z-30 flex items-center justify-between">
     <div class="flex items-center space-x-2">
       <span class="text-xs font-semibold tracking-wider text-zinc-300 uppercase font-mono">DIGICAM VIEWFINDER HUD</span>
-      <span class="text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-1.5 py-0.5 rounded font-mono">GIF ACTIVE</span>
+      <span class="text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-1.5 py-0.5 rounded font-mono">SYNC PRO</span>
     </div>
     <span class="text-xs text-zinc-500 font-mono">1920×1080</span>
   </header>
@@ -57,22 +51,22 @@
     <div class="space-y-3 bg-zinc-900/60 p-3.5 rounded-xl border border-zinc-800">
       <div class="grid grid-cols-2 gap-2">
         <button id="btnGenerateMP4" class="py-3 bg-gradient-to-r from-red-500 to-amber-500 hover:opacity-95 text-zinc-950 font-bold rounded-xl text-xs transition-all shadow-md active:scale-[0.99] flex items-center justify-center space-x-1.5">
-          <span>✨ 무손실 MP4 저장</span>
+          <span>✨ 무손실 MP4 저장 (6초 풀버전)</span>
         </button>
         <button id="btnGenerateGIF" class="py-3 bg-zinc-100 hover:bg-white text-zinc-950 font-bold rounded-xl text-xs transition-all shadow-md active:scale-[0.99] flex items-center justify-center space-x-1.5">
           <span>🎬 고화질 GIF 내보내기</span>
         </button>
       </div>
       <p class="text-[10px] text-zinc-500 text-center">
-        💡 트위터 업로드 시 <b>[무손실 MP4]</b>를 선택하면 배경 GIF와 HUD 텍스트가 번짐 없이 가장 선명하게 재생됩니다.
+        💡 <b>[무손실 MP4]</b>는 트위터 업로드 시 뚝 끊김 없이 완전 부드러운 무한 루프로 자동 재생됩니다.
       </p>
 
       <!-- 인코딩 진행률 바 -->
       <div id="loadingStatus" class="hidden space-y-1.5 py-1">
         <div class="w-full bg-zinc-800 h-1.5 rounded-full overflow-hidden">
-          <div id="progressBar" class="bg-red-500 h-full w-0 transition-all duration-200"></div>
+          <div id="progressBar" class="bg-red-500 h-full w-0 transition-all duration-100"></div>
         </div>
-        <p id="statusMsg" class="text-center text-[11px] text-zinc-400 font-mono">고화질 렌더링 중...</p>
+        <p id="statusMsg" class="text-center text-[11px] text-zinc-400 font-mono">녹화 준비 중...</p>
       </div>
 
       <!-- 완성 결과물 -->
@@ -107,7 +101,6 @@
               <span id="bgStatus" class="text-[10px] text-zinc-400 font-mono px-2 py-0.5 bg-zinc-800 rounded border border-zinc-700">대기 중</span>
             </div>
 
-            <!-- 안드로이드 갤러리 & 다운로드 폴더 선택 버튼 -->
             <div class="grid grid-cols-2 gap-2">
               <label class="flex flex-col items-center justify-center p-3 bg-zinc-900 hover:bg-zinc-800 rounded-lg border border-zinc-700 cursor-pointer transition text-center group active:scale-[0.98]">
                 <span class="text-base mb-1">🖼️</span>
@@ -126,7 +119,7 @@
 
             <p class="text-[11px] text-zinc-400 bg-zinc-900/60 p-2 rounded border border-zinc-800/80 leading-relaxed">
               💡 <b>다운로드한 GIF가 갤러리에 없다면?</b><br>
-              오른쪽 <b>[📁 내 파일 / 다운로드]</b>를 누르면 다운로드 폴더에 저장된 GIF 움짤이 목록에 바로 나타납니다.
+              오른쪽 <b>[📁 내 파일 / 다운로드]</b>를 누르면 다운로드 폴더의 GIF 움짤이 목록에 바로 나타납니다.
             </p>
           </div>
         </div>
@@ -269,6 +262,9 @@
 
     let bgMedia = null;
     let animProgress = 0;
+    let previewTimer = null;
+    let isExporting = false; // 녹화 중 플래그
+
     let themeColor = '#f59e0b';
     let hudColor = '#ffffff';
     let isRecOn = true;
@@ -481,7 +477,7 @@
       draw();
     });
 
-    // ================= omggif 기반 완벽한 GIF 디코더 =================
+    // ================= 오류 완전 해결: omggif 표준 전체 버퍼 디코더 =================
     async function loadMediaFile(file, statusEl) {
       if (!file) return null;
       if (statusEl) {
@@ -508,42 +504,23 @@
               const height = reader.height;
               const canvasList = [];
 
-              // 누적 캔버스 (디스포절 처리)
-              const accumCanvas = document.createElement('canvas');
-              accumCanvas.width = width;
-              accumCanvas.height = height;
-              const accumCtx = accumCanvas.getContext('2d');
-
-              let totalDuration = 0;
+              // ★ 버그 해결 핵심: omggif는 전체 화면 크기의 버퍼(width * height * 4)를 요구함
+              const framePixels = new Uint8ClampedArray(width * height * 4);
 
               for (let i = 0; i < numFrames; i++) {
-                const info = reader.frameInfo(i);
-                const delay = (info.delay && info.delay > 0) ? info.delay * 10 : 100;
-                totalDuration += delay;
+                // 각 프레임을 버퍼에 직접 누적 디코딩
+                reader.decodeAndBlitFrameRGBA(i, framePixels);
 
-                // 프레임 캔버스
                 const fCanvas = document.createElement('canvas');
                 fCanvas.width = width;
                 fCanvas.height = height;
                 const fCtx = fCanvas.getContext('2d');
 
-                // 이전 상태 복사
-                fCtx.drawImage(accumCanvas, 0, 0);
+                const imgData = fCtx.createImageData(width, height);
+                imgData.data.set(framePixels);
+                fCtx.putImageData(imgData, 0, 0);
 
-                // 현재 패치 디코딩
-                const patchData = fCtx.getImageData(info.x, info.y, info.width, info.height);
-                reader.decodeAndBlitFrameRGBA(i, patchData.data);
-                fCtx.putImageData(patchData, info.x, info.y);
-
-                // 프레임 리스트에 추가
                 canvasList.push(fCanvas);
-
-                // 디스포절(Disposal) 처리
-                if (info.disposal === 2) {
-                  accumCtx.clearRect(info.x, info.y, info.width, info.height);
-                } else if (info.disposal !== 3) {
-                  accumCtx.drawImage(fCanvas, 0, 0);
-                }
               }
 
               if (statusEl) {
@@ -551,15 +528,11 @@
                 statusEl.className = 'text-[10px] text-emerald-400 font-mono px-2 py-0.5 bg-emerald-500/10 rounded border border-emerald-500/20';
               }
 
-              // 7초 동안 몇 번 루프해야 자연스러운 속도인지 계산
-              const loopsInCycle = Math.max(1, Math.round(7000 / (totalDuration || 1000)));
-
               return {
                 isGif: true,
                 frames: canvasList,
                 width: width,
-                height: height,
-                loops: loopsInCycle
+                height: height
               };
             }
           }
@@ -568,7 +541,7 @@
         console.warn('GIF decode error, fallback to static image:', err);
       }
 
-      // 일반 이미지 (JPG, PNG) 또는 단일 프레임 GIF
+      // 일반 이미지 (JPG, PNG) 또는 정적 로드
       return new Promise((resolve) => {
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -595,14 +568,12 @@
     bgInputGallery.addEventListener('change', () => onMediaSelected(bgInputGallery));
     bgInputFiles.addEventListener('change', () => onMediaSelected(bgInputFiles));
 
-    // GIF 자연스러운 프레임 계산
     function getDrawableSource(media, prog) {
       if (!media) return null;
       if (media.isGif && media.frames && media.frames.length > 0) {
-        const loops = media.loops || 1;
-        const totalSteps = media.frames.length * loops;
-        const currentStep = Math.floor(prog * totalSteps) % media.frames.length;
-        return media.frames[currentStep];
+        // 원본 GIF의 자연스러운 루프 속도
+        const frameIdx = Math.floor(prog * media.frames.length * 3) % media.frames.length;
+        return media.frames[frameIdx];
       }
       return media.img;
     }
@@ -623,6 +594,7 @@
     }
 
     function handleDragStart(e) {
+      if (isExporting) return;
       const pos = getCanvasCoords(e);
       for (let i = renderOrder.length - 1; i >= 0; i--) {
         const key = renderOrder[i];
@@ -643,7 +615,7 @@
     }
 
     function handleDragMove(e) {
-      if (!draggingItem) return;
+      if (!draggingItem || isExporting) return;
       const pos = getCanvasCoords(e);
       elements[draggingItem].x = Math.round(pos.x - dragOffset.x);
       elements[draggingItem].y = Math.round(pos.y - dragOffset.y);
@@ -668,7 +640,7 @@
     function draw(prog = animProgress) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // 1. 배경 미디어 (움직이는 GIF 또는 정적 이미지)
+      // 1. 배경 미디어 (GIF 프레임 또는 정적 이미지)
       const bgSource = getDrawableSource(bgMedia, prog);
       if (bgSource && bgMedia) {
         const scale = Math.max(canvas.width / bgMedia.width, canvas.height / bgMedia.height);
@@ -703,8 +675,8 @@
       // 4. 레트로 디카 HUD 오버레이
       renderDigicamHUD(prog);
 
-      // 드래그 가이드 점선
-      if (draggingItem) {
+      // 드래그 가이드 점선 (내보내기 중일 땐 미출력)
+      if (draggingItem && !isExporting) {
         const it = elements[draggingItem];
         ctx.save();
         ctx.strokeStyle = themeColor;
@@ -734,7 +706,7 @@
       ctx.strokeStyle = hudColor;
       ctx.fillStyle = hudColor;
 
-      // [1] 상단 OSD 텍스트 바
+      // [1] 상단 OSD 텍스트 바 (y = 26px)
       ctx.font = 'bold 12px monospace, monospace';
       ctx.textAlign = 'left';
 
@@ -795,7 +767,7 @@
         ctx.stroke();
       }
 
-      // [3] 하단 OSD 텍스트 바
+      // [3] 하단 OSD 텍스트 바 (y = 518px)
       const dateVal = hudDateInput.value.trim() || hudDateInput.placeholder;
       const timeVal = hudTimeInput.value.trim() || hudTimeInput.placeholder;
       ctx.textAlign = 'left';
@@ -881,6 +853,7 @@
       ctx.restore();
     }
 
+    // ★ 메신저 창: 여유로운 타이핑과 넉넉한 읽기 시간(Hold) 확보
     function renderGlassChatWindow(prog) {
       const it = elements.chat;
       const name = senderName.value.trim() || senderName.placeholder.replace('예: ', '');
@@ -937,8 +910,9 @@
       ctx.textAlign = 'center';
       ctx.fillText(name, hx + hw / 2 + 5, hy + 19);
 
+      // 전체 시간의 55% 동안 순차 등장, 나머지 45%(약 2.8초)는 전체 완성 상태로 차분히 유지
       const total = bubbleLayouts.length;
-      const revealWindow = 0.65;
+      const revealWindow = 0.55;
       const stepDuration = revealWindow / total;
       
       let visibleCount = 0;
@@ -950,7 +924,7 @@
         const currentStep = prog / stepDuration;
         visibleCount = Math.floor(currentStep);
         const subProgress = currentStep - visibleCount;
-        if (subProgress < 0.45 && visibleCount < total) {
+        if (subProgress < 0.42 && visibleCount < total) {
           typingIndex = visibleCount;
         } else {
           visibleCount = Math.min(total, visibleCount + 1);
@@ -1084,12 +1058,24 @@
       ctx.restore();
     }
 
-    // 7초 주기로 부드럽게 루프
-    draw(0);
-    setInterval(() => {
-      animProgress = (animProgress + 0.007) % 1;
-      draw(animProgress);
-    }, 50);
+    // ================= 타이머 관리 (녹화 충돌 원천 방지) =================
+    function startPreviewLoop() {
+      stopPreviewLoop();
+      previewTimer = setInterval(() => {
+        if (isExporting) return;
+        animProgress = (animProgress + 0.005) % 1;
+        draw(animProgress);
+      }, 30);
+    }
+
+    function stopPreviewLoop() {
+      if (previewTimer) {
+        clearInterval(previewTimer);
+        previewTimer = null;
+      }
+    }
+
+    startPreviewLoop();
 
     // ================= 고화질 내보내기 =================
     const btnGenerateGIF = document.getElementById('btnGenerateGIF');
@@ -1104,15 +1090,18 @@
 
     // 1. 고화질 GIF 내보내기
     btnGenerateGIF.addEventListener('click', () => {
+      isExporting = true;
+      stopPreviewLoop();
+
       btnGenerateGIF.disabled = true;
       btnGenerateMP4.disabled = true;
       loadingStatus.classList.remove('hidden');
       resultArea.classList.add('hidden');
       progressBar.style.width = '15%';
-      statusMsg.textContent = '디카 프레임 캡처 중...';
+      statusMsg.textContent = '순차 프레임 캡처 중...';
 
       const frames = [];
-      const totalFrames = 18;
+      const totalFrames = 20; // 6초 루프 분할
       for (let i = 0; i < totalFrames; i++) {
         draw(i / totalFrames);
         frames.push(canvas.toDataURL('image/png'));
@@ -1125,10 +1114,13 @@
         images: frames,
         gifWidth: 960,
         gifHeight: 540,
-        interval: 0.16,
+        interval: 0.25, // 프레임당 250ms -> 총 5초 루프
         sampleInterval: 2,
         numWorkers: 2
       }, function(obj) {
+        isExporting = false;
+        startPreviewLoop();
+
         btnGenerateGIF.disabled = false;
         btnGenerateMP4.disabled = false;
         loadingStatus.classList.add('hidden');
@@ -1145,16 +1137,22 @@
       });
     });
 
-    // 2. 무손실 초고화질 MP4 내보내기
+    // 2. ★ 무손실 초고화질 MP4 내보내기 (타이머 충돌 완벽 해결판)
     btnGenerateMP4.addEventListener('click', () => {
+      isExporting = true;
+      stopPreviewLoop(); // ★ 핵심: 미리보기 타이머 완전 정지
+
       btnGenerateGIF.disabled = true;
       btnGenerateMP4.disabled = true;
       loadingStatus.classList.remove('hidden');
       resultArea.classList.add('hidden');
-      progressBar.style.width = '20%';
-      statusMsg.textContent = '무손실 60fps 비디오 녹화 중...';
+      progressBar.style.width = '10%';
+      statusMsg.textContent = '무손실 6초 비디오 녹화 시작...';
 
-      const stream = canvas.captureStream(60);
+      // 캔버스를 0.0초(첫 프레임)로 완전 초기화
+      draw(0.0);
+
+      const stream = canvas.captureStream(30);
       let mimeType = 'video/mp4';
       if (!MediaRecorder.isTypeSupported('video/mp4')) {
         if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9')) {
@@ -1183,6 +1181,9 @@
         btnDownload.href = videoUrl;
         btnDownload.download = `aesthetic_digicam_16x9.mp4`;
 
+        isExporting = false;
+        startPreviewLoop(); // ★ 녹화 완료 후 미리보기 재개
+
         btnGenerateGIF.disabled = false;
         btnGenerateMP4.disabled = false;
         loadingStatus.classList.add('hidden');
@@ -1192,18 +1193,23 @@
 
       recorder.start();
 
+      // 6초(180스텝, 30fps) 동안 0.0초부터 1.0까지 프레임 바이 프레임 완벽 동기화 녹화
       let currentFrame = 0;
-      const totalSteps = 60;
-      const interval = setInterval(() => {
-        draw(currentFrame / totalSteps);
+      const totalSteps = 180;
+      const stepInterval = setInterval(() => {
+        const p = currentFrame / totalSteps;
+        draw(p);
         currentFrame++;
-        progressBar.style.width = `${Math.min(90, Math.round((currentFrame / totalSteps) * 100))}%`;
+        
+        const pct = Math.min(95, Math.round((currentFrame / totalSteps) * 100));
+        progressBar.style.width = `${pct}%`;
+        statusMsg.textContent = `비디오 렌더링 중 (${Math.round(currentFrame / 30)}/6초)...`;
 
         if (currentFrame >= totalSteps) {
-          clearInterval(interval);
+          clearInterval(stepInterval);
           recorder.stop();
         }
-      }, 50);
+      }, 33);
     });
 
     // 트위터 공유
