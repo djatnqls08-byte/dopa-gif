@@ -8,8 +8,14 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- gifshot (GIF 내보내기 인코더) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gifshot/0.3.2/gifshot.min.js"></script>
-  <!-- gifuct-js (업로드한 GIF 프레임 디코더) -->
-  <script src="https://cdn.jsdelivr.net/npm/gifuct-js@2.1.2/dist/gifuct-js.min.js"></script>
+  <!-- omggif (검증된 고성능 GIF 프레임 디코더) -->
+  <script src="https://cdn.jsdelivr.net/npm/omggif@1.0.10/omggif.js"></script>
+  <script>
+    // CDN 백업 로더
+    if (!window.omggif && !window.GifReader) {
+      document.write('<script src="https://unpkg.com/omggif@1.0.10/omggif.js"><\/script>');
+    }
+  </script>
   <!-- Pretendard 폰트 -->
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
   <style>
@@ -26,7 +32,7 @@
   <header class="border-b border-zinc-800/80 px-4 py-3 bg-[#09090b]/80 backdrop-blur sticky top-0 z-30 flex items-center justify-between">
     <div class="flex items-center space-x-2">
       <span class="text-xs font-semibold tracking-wider text-zinc-300 uppercase font-mono">DIGICAM VIEWFINDER HUD</span>
-      <span class="text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-1.5 py-0.5 rounded font-mono">GIF FIXED</span>
+      <span class="text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-1.5 py-0.5 rounded font-mono">GIF ACTIVE</span>
     </div>
     <span class="text-xs text-zinc-500 font-mono">1920×1080</span>
   </header>
@@ -58,7 +64,7 @@
         </button>
       </div>
       <p class="text-[10px] text-zinc-500 text-center">
-        💡 트위터 업로드 시 <b>[무손실 MP4]</b>를 선택하면 디카 OSD 텍스트가 번짐 없이 가장 선명하게 재생됩니다.
+        💡 트위터 업로드 시 <b>[무손실 MP4]</b>를 선택하면 배경 GIF와 HUD 텍스트가 번짐 없이 가장 선명하게 재생됩니다.
       </p>
 
       <!-- 인코딩 진행률 바 -->
@@ -93,15 +99,15 @@
 
       <div class="p-4 space-y-4">
         
-        <!-- [탭 1] 이미지 & 움짤(GIF) 등록 (모바일 완벽 호환 2트랙 방식) -->
+        <!-- [탭 1] 이미지 & 움짤(GIF) 등록 -->
         <div id="tab1" class="tab-content space-y-4">
           <div class="bg-zinc-950 p-3.5 rounded-xl border border-zinc-800 space-y-3">
             <div class="flex justify-between items-center">
               <label class="text-xs font-bold text-zinc-200">배경 미디어 등록 (GIF / JPG / PNG)</label>
-              <span id="bgStatus" class="text-[10px] text-amber-400 font-mono px-2 py-0.5 bg-amber-500/10 rounded border border-amber-500/20">대기 중</span>
+              <span id="bgStatus" class="text-[10px] text-zinc-400 font-mono px-2 py-0.5 bg-zinc-800 rounded border border-zinc-700">대기 중</span>
             </div>
 
-            <!-- 안드로이드 갤러리 & 다운로드 폴더 분리 버튼 -->
+            <!-- 안드로이드 갤러리 & 다운로드 폴더 선택 버튼 -->
             <div class="grid grid-cols-2 gap-2">
               <label class="flex flex-col items-center justify-center p-3 bg-zinc-900 hover:bg-zinc-800 rounded-lg border border-zinc-700 cursor-pointer transition text-center group active:scale-[0.98]">
                 <span class="text-base mb-1">🖼️</span>
@@ -114,14 +120,13 @@
                 <span class="text-base mb-1">📁</span>
                 <span class="text-xs font-bold text-red-400 group-hover:text-red-300">내 파일 / 다운로드</span>
                 <span class="text-[10px] text-red-300/70">★ GIF 움짤 전용</span>
-                <!-- accept="*/*" 로 설정하여 안드로이드 파일 탐색기에서 GIF가 절대 숨겨지지 않음 -->
                 <input type="file" id="bgInputFiles" accept="*/*" class="hidden">
               </label>
             </div>
 
             <p class="text-[11px] text-zinc-400 bg-zinc-900/60 p-2 rounded border border-zinc-800/80 leading-relaxed">
-              💡 <b>갤러리에서 GIF가 안 보이시나요?</b><br>
-              오른쪽 <b>[📁 내 파일 / 다운로드]</b>를 누르시면 다운로드 폴더에 저장된 GIF 움짤이 목록에 바로 나타납니다!
+              💡 <b>다운로드한 GIF가 갤러리에 없다면?</b><br>
+              오른쪽 <b>[📁 내 파일 / 다운로드]</b>를 누르면 다운로드 폴더에 저장된 GIF 움짤이 목록에 바로 나타납니다.
             </p>
           </div>
         </div>
@@ -129,7 +134,6 @@
         <!-- [탭 2] 디카 OSD HUD & 대사 커스텀 -->
         <div id="tab2" class="tab-content hidden space-y-4">
           
-          <!-- 디카 전용 OSD 설정 카드 -->
           <div class="bg-zinc-950 p-3 rounded-xl border border-zinc-800 space-y-3">
             <span class="text-xs font-semibold text-zinc-300 flex items-center gap-1.5 font-mono">
               <span class="w-2 h-2 rounded-full bg-red-500"></span> OSD VIEWFINDER SETTINGS
@@ -156,7 +160,6 @@
               </div>
             </div>
 
-            <!-- 날짜 & 시간 인풋 -->
             <div class="grid grid-cols-2 gap-2 pt-1 border-t border-zinc-800/80">
               <div>
                 <label class="text-[10px] text-zinc-500">촬영 날짜 (타임스탬프)</label>
@@ -168,7 +171,6 @@
               </div>
             </div>
 
-            <!-- 셔터 / 줌 설정값 -->
             <div class="grid grid-cols-2 gap-2">
               <div>
                 <label class="text-[10px] text-zinc-500">렌즈 줌 표기</label>
@@ -181,19 +183,16 @@
             </div>
           </div>
 
-          <!-- 인용 대사 -->
           <div>
             <label class="text-[11px] text-zinc-400">인용 대사 캡슐</label>
             <input type="text" id="quoteText" placeholder="예: 도파미너, 오랜만입니다." value="" class="w-full mt-1 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-500">
           </div>
 
-          <!-- 메신저 상대 이름 -->
           <div>
             <label class="text-[11px] text-zinc-400">메신저 상대 이름</label>
             <input type="text" id="senderName" placeholder="예: 윤세라" value="" class="w-full mt-1 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white placeholder-zinc-500">
           </div>
 
-          <!-- 동적 말풍선 리스트 -->
           <div class="space-y-2 border-t border-zinc-800 pt-3">
             <div class="flex items-center justify-between">
               <div>
@@ -207,7 +206,6 @@
             <div id="bubblesContainer" class="space-y-2 max-h-56 overflow-y-auto pr-1"></div>
           </div>
 
-          <!-- 음악 플레이어 정보 -->
           <div class="grid grid-cols-2 gap-2 pt-2 border-t border-zinc-800">
             <div>
               <label class="text-[11px] text-zinc-400">곡명</label>
@@ -222,7 +220,6 @@
 
         <!-- [탭 3] 테마 및 디카 HUD 컬러 -->
         <div id="tab3" class="tab-content hidden space-y-4">
-          <!-- 1. 디카 HUD 텍스트 컬러 -->
           <div>
             <label class="block text-xs font-medium text-zinc-400 mb-2 font-mono">디카 OSD 텍스트 컬러</label>
             <div class="flex items-center gap-2 flex-wrap">
@@ -234,7 +231,6 @@
             </div>
           </div>
 
-          <!-- 2. 위젯 포인트 테마 컬러 -->
           <div class="border-t border-zinc-800 pt-3">
             <label class="block text-xs font-medium text-zinc-400 mb-2">말풍선 & 재생바 포인트 색상</label>
             <div class="flex items-center gap-2.5 flex-wrap">
@@ -485,70 +481,103 @@
       draw();
     });
 
-    // ================= 모바일 완벽 대응: Magic Bytes 기반 GIF 디코더 =================
+    // ================= omggif 기반 완벽한 GIF 디코더 =================
     async function loadMediaFile(file, statusEl) {
       if (!file) return null;
-      if (statusEl) statusEl.textContent = '파일 확인 중...';
+      if (statusEl) {
+        statusEl.textContent = '파일 분석 중...';
+        statusEl.className = 'text-[10px] text-amber-400 font-mono px-2 py-0.5 bg-amber-500/10 rounded border border-amber-500/20';
+      }
 
       try {
         const buffer = await file.arrayBuffer();
-        const bytes = new Uint8Array(buffer.slice(0, 6));
-        // GIF 매직 바이트 확인: 'G'(71), 'I'(73), 'F'(70)
-        const isActuallyGif = (bytes[0] === 71 && bytes[1] === 73 && bytes[2] === 70);
+        const bytes = new Uint8Array(buffer);
+        // GIF 매직 바이트 확인 ('GIF87a' or 'GIF89a')
+        const isGifHeader = (bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46);
 
-        if (isActuallyGif) {
-          if (statusEl) statusEl.textContent = 'GIF 프레임 파싱 중...';
+        if (isGifHeader) {
+          if (statusEl) statusEl.textContent = 'GIF 프레임 추출 중...';
           
-          const gifLib = window.gifuct || window.GIFUCT;
-          if (gifLib && typeof gifLib.parseGIF === 'function') {
-            const parsed = gifLib.parseGIF(buffer);
-            const frames = gifLib.decompressFrames(parsed, true);
+          const ReaderClass = (window.omggif && window.omggif.GifReader) || window.GifReader;
+          if (ReaderClass) {
+            const reader = new ReaderClass(bytes);
+            const numFrames = reader.numFrames();
 
-            if (frames && frames.length > 0) {
+            if (numFrames > 1) {
+              const width = reader.width;
+              const height = reader.height;
               const canvasList = [];
-              const tempCanvas = document.createElement('canvas');
-              const tempCtx = tempCanvas.getContext('2d');
-              tempCanvas.width = parsed.lsd.width;
-              tempCanvas.height = parsed.lsd.height;
 
-              frames.forEach(frame => {
+              // 누적 캔버스 (디스포절 처리)
+              const accumCanvas = document.createElement('canvas');
+              accumCanvas.width = width;
+              accumCanvas.height = height;
+              const accumCtx = accumCanvas.getContext('2d');
+
+              let totalDuration = 0;
+
+              for (let i = 0; i < numFrames; i++) {
+                const info = reader.frameInfo(i);
+                const delay = (info.delay && info.delay > 0) ? info.delay * 10 : 100;
+                totalDuration += delay;
+
+                // 프레임 캔버스
                 const fCanvas = document.createElement('canvas');
-                fCanvas.width = tempCanvas.width;
-                fCanvas.height = tempCanvas.height;
+                fCanvas.width = width;
+                fCanvas.height = height;
                 const fCtx = fCanvas.getContext('2d');
 
-                const patchCanvas = document.createElement('canvas');
-                patchCanvas.width = frame.dims.width;
-                patchCanvas.height = frame.dims.height;
-                const pCtx = patchCanvas.getContext('2d');
-                const imgData = pCtx.createImageData(frame.dims.width, frame.dims.height);
-                imgData.data.set(frame.patch);
-                pCtx.putImageData(imgData, 0, 0);
+                // 이전 상태 복사
+                fCtx.drawImage(accumCanvas, 0, 0);
 
-                if (frame.disposalType === 2) {
-                  tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
-                }
-                tempCtx.drawImage(patchCanvas, frame.dims.left, frame.dims.top);
-                fCtx.drawImage(tempCanvas, 0, 0);
+                // 현재 패치 디코딩
+                const patchData = fCtx.getImageData(info.x, info.y, info.width, info.height);
+                reader.decodeAndBlitFrameRGBA(i, patchData.data);
+                fCtx.putImageData(patchData, info.x, info.y);
+
+                // 프레임 리스트에 추가
                 canvasList.push(fCanvas);
-              });
 
-              if (statusEl) statusEl.textContent = `움짤 GIF (${canvasList.length}프레임)`;
-              return { isGif: true, frames: canvasList, width: tempCanvas.width, height: tempCanvas.height };
+                // 디스포절(Disposal) 처리
+                if (info.disposal === 2) {
+                  accumCtx.clearRect(info.x, info.y, info.width, info.height);
+                } else if (info.disposal !== 3) {
+                  accumCtx.drawImage(fCanvas, 0, 0);
+                }
+              }
+
+              if (statusEl) {
+                statusEl.textContent = `움짤 GIF (${canvasList.length}프레임 작동 중 ✨)`;
+                statusEl.className = 'text-[10px] text-emerald-400 font-mono px-2 py-0.5 bg-emerald-500/10 rounded border border-emerald-500/20';
+              }
+
+              // 7초 동안 몇 번 루프해야 자연스러운 속도인지 계산
+              const loopsInCycle = Math.max(1, Math.round(7000 / (totalDuration || 1000)));
+
+              return {
+                isGif: true,
+                frames: canvasList,
+                width: width,
+                height: height,
+                loops: loopsInCycle
+              };
             }
           }
         }
       } catch (err) {
-        console.warn('GIF decode warning, fallback to image:', err);
+        console.warn('GIF decode error, fallback to static image:', err);
       }
 
-      // 일반 이미지 (JPG, PNG) 또는 기본 이미지 로드
+      // 일반 이미지 (JPG, PNG) 또는 단일 프레임 GIF
       return new Promise((resolve) => {
         const reader = new FileReader();
         reader.onload = (e) => {
           const img = new Image();
           img.onload = () => {
-            if (statusEl) statusEl.textContent = '정적 이미지 등록됨';
+            if (statusEl) {
+              statusEl.textContent = '정적 이미지 등록됨';
+              statusEl.className = 'text-[10px] text-zinc-400 font-mono px-2 py-0.5 bg-zinc-800 rounded border border-zinc-700';
+            }
             resolve({ isGif: false, img, width: img.width, height: img.height });
           };
           img.src = e.target.result;
@@ -557,7 +586,6 @@
       });
     }
 
-    // 갤러리 및 내 파일 두 입력 모두 처리
     async function onMediaSelected(inputEl) {
       if (inputEl.files && inputEl.files[0]) {
         bgMedia = await loadMediaFile(inputEl.files[0], bgStatus);
@@ -567,11 +595,14 @@
     bgInputGallery.addEventListener('change', () => onMediaSelected(bgInputGallery));
     bgInputFiles.addEventListener('change', () => onMediaSelected(bgInputFiles));
 
+    // GIF 자연스러운 프레임 계산
     function getDrawableSource(media, prog) {
       if (!media) return null;
       if (media.isGif && media.frames && media.frames.length > 0) {
-        const frameIdx = Math.floor(prog * media.frames.length) % media.frames.length;
-        return media.frames[frameIdx];
+        const loops = media.loops || 1;
+        const totalSteps = media.frames.length * loops;
+        const currentStep = Math.floor(prog * totalSteps) % media.frames.length;
+        return media.frames[currentStep];
       }
       return media.img;
     }
@@ -637,7 +668,7 @@
     function draw(prog = animProgress) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // 1. 배경 미디어
+      // 1. 배경 미디어 (움직이는 GIF 또는 정적 이미지)
       const bgSource = getDrawableSource(bgMedia, prog);
       if (bgSource && bgMedia) {
         const scale = Math.max(canvas.width / bgMedia.width, canvas.height / bgMedia.height);
@@ -737,7 +768,7 @@
       ctx.fillRect(batX + 3, batY + 2.5, 5.5, 7);
       ctx.fillRect(batX + 10.5, batY + 2.5, 5.5, 7);
 
-      // [2] 모서리 4개 코너 브래킷 (텍스트와 22px 이상 완벽 분리)
+      // [2] 모서리 4개 코너 브래킷 (여백 완벽 분리)
       if (isBracketOn) {
         const bLeft = 40;
         const bRight = 920;
@@ -801,7 +832,7 @@
       ctx.stroke();
 
       ctx.beginPath();
-      ctx.moveTo(it.x + it.w - corner, it.y); ctx.lineTo(it.x + it.w, it.y); ctx.lineTo(it.x + it.w, it.y + corner);
+      ctx.moveTo(it.x + it.w - corner, it.y); ctx.lineTo(it.x + it.w, it.y); ctx.lineTo(it.x + corner, it.y);
       ctx.stroke();
 
       ctx.beginPath();
@@ -1081,7 +1112,7 @@
       statusMsg.textContent = '디카 프레임 캡처 중...';
 
       const frames = [];
-      const totalFrames = 16;
+      const totalFrames = 18;
       for (let i = 0; i < totalFrames; i++) {
         draw(i / totalFrames);
         frames.push(canvas.toDataURL('image/png'));
