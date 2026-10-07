@@ -9,7 +9,7 @@
   <!-- gifshot (GIF 내보내기 인코더) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gifshot/0.3.2/gifshot.min.js"></script>
   <!-- gifuct-js (업로드한 GIF 프레임 디코더) -->
-  <script src="https://cdn.jsdelivr.net/npm/gifuct-js/dist/gifuct-js.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gifuct-js@2.1.2/dist/gifuct-js.min.js"></script>
   <!-- Pretendard 폰트 -->
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
   <style>
@@ -26,7 +26,7 @@
   <header class="border-b border-zinc-800/80 px-4 py-3 bg-[#09090b]/80 backdrop-blur sticky top-0 z-30 flex items-center justify-between">
     <div class="flex items-center space-x-2">
       <span class="text-xs font-semibold tracking-wider text-zinc-300 uppercase font-mono">DIGICAM VIEWFINDER HUD</span>
-      <span class="text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-1.5 py-0.5 rounded font-mono">FIXED</span>
+      <span class="text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-1.5 py-0.5 rounded font-mono">GIF FIXED</span>
     </div>
     <span class="text-xs text-zinc-500 font-mono">1920×1080</span>
   </header>
@@ -58,7 +58,7 @@
         </button>
       </div>
       <p class="text-[10px] text-zinc-500 text-center">
-        💡 트위터 업로드 시 <b>[무손실 MP4]</b>를 선택하면 디카 특유의 OSD 텍스트가 번짐 없이 가장 선명하게 재생됩니다.
+        💡 트위터 업로드 시 <b>[무손실 MP4]</b>를 선택하면 디카 OSD 텍스트가 번짐 없이 가장 선명하게 재생됩니다.
       </p>
 
       <!-- 인코딩 진행률 바 -->
@@ -93,18 +93,37 @@
 
       <div class="p-4 space-y-4">
         
-        <!-- [탭 1] 이미지 & 움짤(GIF) 등록 -->
-        <div id="tab1" class="tab-content space-y-3">
-          <div>
-            <div class="flex justify-between items-center mb-1.5">
-              <label class="text-xs font-medium text-zinc-300">디카 뷰파인더 메인 배경 (JPG, PNG, GIF 지원)</label>
-              <span id="bgStatus" class="text-[10px] text-zinc-500 font-mono">기본</span>
+        <!-- [탭 1] 이미지 & 움짤(GIF) 등록 (모바일 완벽 호환 2트랙 방식) -->
+        <div id="tab1" class="tab-content space-y-4">
+          <div class="bg-zinc-950 p-3.5 rounded-xl border border-zinc-800 space-y-3">
+            <div class="flex justify-between items-center">
+              <label class="text-xs font-bold text-zinc-200">배경 미디어 등록 (GIF / JPG / PNG)</label>
+              <span id="bgStatus" class="text-[10px] text-amber-400 font-mono px-2 py-0.5 bg-amber-500/10 rounded border border-amber-500/20">대기 중</span>
             </div>
-            <input type="file" id="bgInput" accept="image/*,.gif" class="w-full text-xs text-zinc-400 file:mr-2.5 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-zinc-800 file:text-zinc-200 hover:file:bg-zinc-700 cursor-pointer">
+
+            <!-- 안드로이드 갤러리 & 다운로드 폴더 분리 버튼 -->
+            <div class="grid grid-cols-2 gap-2">
+              <label class="flex flex-col items-center justify-center p-3 bg-zinc-900 hover:bg-zinc-800 rounded-lg border border-zinc-700 cursor-pointer transition text-center group active:scale-[0.98]">
+                <span class="text-base mb-1">🖼️</span>
+                <span class="text-xs font-semibold text-zinc-200 group-hover:text-white">사진 갤러리</span>
+                <span class="text-[10px] text-zinc-500">일반 사진 / 앨범</span>
+                <input type="file" id="bgInputGallery" accept="image/*" class="hidden">
+              </label>
+
+              <label class="flex flex-col items-center justify-center p-3 bg-red-950/20 hover:bg-red-950/40 rounded-lg border border-red-500/30 cursor-pointer transition text-center group active:scale-[0.98]">
+                <span class="text-base mb-1">📁</span>
+                <span class="text-xs font-bold text-red-400 group-hover:text-red-300">내 파일 / 다운로드</span>
+                <span class="text-[10px] text-red-300/70">★ GIF 움짤 전용</span>
+                <!-- accept="*/*" 로 설정하여 안드로이드 파일 탐색기에서 GIF가 절대 숨겨지지 않음 -->
+                <input type="file" id="bgInputFiles" accept="*/*" class="hidden">
+              </label>
+            </div>
+
+            <p class="text-[11px] text-zinc-400 bg-zinc-900/60 p-2 rounded border border-zinc-800/80 leading-relaxed">
+              💡 <b>갤러리에서 GIF가 안 보이시나요?</b><br>
+              오른쪽 <b>[📁 내 파일 / 다운로드]</b>를 누르시면 다운로드 폴더에 저장된 GIF 움짤이 목록에 바로 나타납니다!
+            </p>
           </div>
-          <p class="text-[11px] text-zinc-500">
-            ✨ 움직이는 GIF 일러스트를 업로드하면 레트로 캠코더 화면 속에서 생생하게 움직입니다.
-          </p>
         </div>
 
         <!-- [탭 2] 디카 OSD HUD & 대사 커스텀 -->
@@ -117,21 +136,18 @@
             </span>
 
             <div class="grid grid-cols-3 gap-1.5">
-              <!-- REC 토글 -->
               <div class="flex flex-col items-center justify-center bg-zinc-900 p-2 rounded-lg border border-zinc-800 text-center">
                 <span class="text-[10px] text-zinc-400 mb-1">녹화 표시</span>
                 <button type="button" id="btnToggleRec" class="w-full py-1 rounded text-[10px] font-bold transition bg-red-500/20 text-red-400 border border-red-500/30">
                   REC (ON)
                 </button>
               </div>
-              <!-- AF 박스 토글 -->
               <div class="flex flex-col items-center justify-center bg-zinc-900 p-2 rounded-lg border border-zinc-800 text-center">
                 <span class="text-[10px] text-zinc-400 mb-1">AF 포커스</span>
                 <button type="button" id="btnToggleAF" class="w-full py-1 rounded text-[10px] font-bold transition bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                   [ AF ] ON
                 </button>
               </div>
-              <!-- 코너 브래킷 토글 -->
               <div class="flex flex-col items-center justify-center bg-zinc-900 p-2 rounded-lg border border-zinc-800 text-center">
                 <span class="text-[10px] text-zinc-400 mb-1">뷰파인더 틀</span>
                 <button type="button" id="btnToggleBracket" class="w-full py-1 rounded text-[10px] font-bold transition bg-amber-500/20 text-amber-400 border border-amber-500/30">
@@ -258,12 +274,11 @@
     let bgMedia = null;
     let animProgress = 0;
     let themeColor = '#f59e0b';
-    let hudColor = '#ffffff'; // 디카 OSD 컬러 기본 화이트
-    let isRecOn = true;        // REC 표시 여부
-    let isAFOn = true;         // AF 포커스 박스 표시 여부
-    let isBracketOn = true;    // 뷰파인더 코너 브래킷 틀 표시 여부
+    let hudColor = '#ffffff';
+    let isRecOn = true;
+    let isAFOn = true;
+    let isBracketOn = true;
 
-    // 안전한 둥근 사각형 유틸
     function drawRoundRect(c, x, y, w, h, r) {
       const radius = Math.min(r, w / 2, h / 2);
       if (typeof c.roundRect === 'function') {
@@ -286,7 +301,6 @@
     }
     const roundRect = drawRoundRect;
 
-    // 텍스트 줄바꿈 계산기
     function getWrappedLines(context, text, maxWidth) {
       if (!text) return [''];
       const chars = Array.from(text);
@@ -307,7 +321,6 @@
       return lines.length > 0 ? lines : [''];
     }
 
-    // 기본 위치
     const defaultElements = {
       afBox:  { id: 'afBox',  x: 430, y: 190, w: 100, h: 100 },
       quote:  { id: 'quote',  x: 580, y: 350, w: 240, h: 36 },
@@ -320,7 +333,6 @@
     let draggingItem = null;
     let dragOffset = { x: 0, y: 0 };
 
-    // 말풍선 목록
     let chatBubbles = [
       { side: 'left',  text: '', placeholder: '도파미너, 클로즈베타 기대되네요.' },
       { side: 'right', text: '', placeholder: '네, 정말로요!' },
@@ -329,7 +341,8 @@
     ];
 
     // DOM
-    const bgInput = document.getElementById('bgInput');
+    const bgInputGallery = document.getElementById('bgInputGallery');
+    const bgInputFiles = document.getElementById('bgInputFiles');
     const bgStatus = document.getElementById('bgStatus');
     const quoteText = document.getElementById('quoteText');
     const senderName = document.getElementById('senderName');
@@ -341,7 +354,6 @@
     const btnAddBubble = document.getElementById('btnAddBubble');
     const btnResetPositions = document.getElementById('btnResetPositions');
     
-    // 디카 OSD 관련 DOM
     const btnToggleRec = document.getElementById('btnToggleRec');
     const btnToggleAF = document.getElementById('btnToggleAF');
     const btnToggleBracket = document.getElementById('btnToggleBracket');
@@ -350,46 +362,33 @@
     const hudZoomInput = document.getElementById('hudZoomInput');
     const hudShutterInput = document.getElementById('hudShutterInput');
 
-    // REC 토글
     btnToggleRec.addEventListener('click', () => {
       isRecOn = !isRecOn;
-      if (isRecOn) {
-        btnToggleRec.textContent = 'REC (ON)';
-        btnToggleRec.className = 'w-full py-1 rounded text-[10px] font-bold transition bg-red-500/20 text-red-400 border border-red-500/30';
-      } else {
-        btnToggleRec.textContent = 'STBY (OFF)';
-        btnToggleRec.className = 'w-full py-1 rounded text-[10px] font-bold transition bg-zinc-800 text-zinc-400 border border-zinc-700';
-      }
+      btnToggleRec.textContent = isRecOn ? 'REC (ON)' : 'STBY (OFF)';
+      btnToggleRec.className = isRecOn 
+        ? 'w-full py-1 rounded text-[10px] font-bold transition bg-red-500/20 text-red-400 border border-red-500/30'
+        : 'w-full py-1 rounded text-[10px] font-bold transition bg-zinc-800 text-zinc-400 border border-zinc-700';
       draw();
     });
 
-    // AF 박스 토글
     btnToggleAF.addEventListener('click', () => {
       isAFOn = !isAFOn;
-      if (isAFOn) {
-        btnToggleAF.textContent = '[ AF ] ON';
-        btnToggleAF.className = 'w-full py-1 rounded text-[10px] font-bold transition bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
-      } else {
-        btnToggleAF.textContent = '[ AF ] OFF';
-        btnToggleAF.className = 'w-full py-1 rounded text-[10px] font-bold transition bg-zinc-800 text-zinc-400 border border-zinc-700';
-      }
+      btnToggleAF.textContent = isAFOn ? '[ AF ] ON' : '[ AF ] OFF';
+      btnToggleAF.className = isAFOn
+        ? 'w-full py-1 rounded text-[10px] font-bold transition bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+        : 'w-full py-1 rounded text-[10px] font-bold transition bg-zinc-800 text-zinc-400 border border-zinc-700';
       draw();
     });
 
-    // 뷰파인더 코너 브래킷 틀 토글
     btnToggleBracket.addEventListener('click', () => {
       isBracketOn = !isBracketOn;
-      if (isBracketOn) {
-        btnToggleBracket.textContent = '┌ ┘ ON';
-        btnToggleBracket.className = 'w-full py-1 rounded text-[10px] font-bold transition bg-amber-500/20 text-amber-400 border border-amber-500/30';
-      } else {
-        btnToggleBracket.textContent = '┌ ┘ OFF';
-        btnToggleBracket.className = 'w-full py-1 rounded text-[10px] font-bold transition bg-zinc-800 text-zinc-400 border border-zinc-700';
-      }
+      btnToggleBracket.textContent = isBracketOn ? '┌ ┘ ON' : '┌ ┘ OFF';
+      btnToggleBracket.className = isBracketOn
+        ? 'w-full py-1 rounded text-[10px] font-bold transition bg-amber-500/20 text-amber-400 border border-amber-500/30'
+        : 'w-full py-1 rounded text-[10px] font-bold transition bg-zinc-800 text-zinc-400 border border-zinc-700';
       draw();
     });
 
-    // HUD 텍스트 컬러 버튼
     document.querySelectorAll('.hud-color-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.hud-color-btn').forEach(b => b.classList.remove('ring-2', 'ring-white', 'ring-offset-2', 'ring-offset-zinc-900'));
@@ -486,19 +485,25 @@
       draw();
     });
 
-    // GIF & 이미지 로더
+    // ================= 모바일 완벽 대응: Magic Bytes 기반 GIF 디코더 =================
     async function loadMediaFile(file, statusEl) {
       if (!file) return null;
-      const isGif = file.type === 'image/gif' || file.name.toLowerCase().endsWith('.gif');
-      if (statusEl) statusEl.textContent = isGif ? 'GIF 디코딩 중...' : '이미지 로드 중...';
+      if (statusEl) statusEl.textContent = '파일 확인 중...';
 
-      if (isGif) {
-        try {
-          const buffer = await file.arrayBuffer();
-          const gifLib = window.GIF || window.gifuct;
-          if (gifLib && gifLib.parseGIF) {
+      try {
+        const buffer = await file.arrayBuffer();
+        const bytes = new Uint8Array(buffer.slice(0, 6));
+        // GIF 매직 바이트 확인: 'G'(71), 'I'(73), 'F'(70)
+        const isActuallyGif = (bytes[0] === 71 && bytes[1] === 73 && bytes[2] === 70);
+
+        if (isActuallyGif) {
+          if (statusEl) statusEl.textContent = 'GIF 프레임 파싱 중...';
+          
+          const gifLib = window.gifuct || window.GIFUCT;
+          if (gifLib && typeof gifLib.parseGIF === 'function') {
             const parsed = gifLib.parseGIF(buffer);
             const frames = gifLib.decompressFrames(parsed, true);
+
             if (frames && frames.length > 0) {
               const canvasList = [];
               const tempCanvas = document.createElement('canvas');
@@ -528,21 +533,22 @@
                 canvasList.push(fCanvas);
               });
 
-              if (statusEl) statusEl.textContent = `움짤 GIF (${canvasList.length}F)`;
+              if (statusEl) statusEl.textContent = `움짤 GIF (${canvasList.length}프레임)`;
               return { isGif: true, frames: canvasList, width: tempCanvas.width, height: tempCanvas.height };
             }
           }
-        } catch (err) {
-          console.warn('GIF decode fallback:', err);
         }
+      } catch (err) {
+        console.warn('GIF decode warning, fallback to image:', err);
       }
 
+      // 일반 이미지 (JPG, PNG) 또는 기본 이미지 로드
       return new Promise((resolve) => {
         const reader = new FileReader();
         reader.onload = (e) => {
           const img = new Image();
           img.onload = () => {
-            if (statusEl) statusEl.textContent = isGif ? '정적 GIF' : '정적 이미지';
+            if (statusEl) statusEl.textContent = '정적 이미지 등록됨';
             resolve({ isGif: false, img, width: img.width, height: img.height });
           };
           img.src = e.target.result;
@@ -551,12 +557,15 @@
       });
     }
 
-    bgInput.addEventListener('change', async () => {
-      if (bgInput.files && bgInput.files[0]) {
-        bgMedia = await loadMediaFile(bgInput.files[0], bgStatus);
+    // 갤러리 및 내 파일 두 입력 모두 처리
+    async function onMediaSelected(inputEl) {
+      if (inputEl.files && inputEl.files[0]) {
+        bgMedia = await loadMediaFile(inputEl.files[0], bgStatus);
         draw();
       }
-    });
+    }
+    bgInputGallery.addEventListener('change', () => onMediaSelected(bgInputGallery));
+    bgInputFiles.addEventListener('change', () => onMediaSelected(bgInputFiles));
 
     function getDrawableSource(media, prog) {
       if (!media) return null;
@@ -571,7 +580,7 @@
       el.addEventListener('input', () => draw());
     });
 
-    // 마우스 / 터치 드래그
+    // 드래그 좌표 계산
     function getCanvasCoords(e) {
       const rect = canvas.getBoundingClientRect();
       const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -628,7 +637,7 @@
     function draw(prog = animProgress) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // 1. 배경 미디어 (일러스트 / GIF)
+      // 1. 배경 미디어
       const bgSource = getDrawableSource(bgMedia, prog);
       if (bgSource && bgMedia) {
         const scale = Math.max(canvas.width / bgMedia.width, canvas.height / bgMedia.height);
@@ -646,7 +655,7 @@
         ctx.fillStyle = '#94a3b8';
         ctx.font = 'bold 15px Pretendard';
         ctx.textAlign = 'center';
-        ctx.fillText('이미지 탭에서 페어 일러스트/GIF를 등록해주세요', canvas.width / 2, canvas.height / 2);
+        ctx.fillText('촬영 미디어 탭에서 이미지나 GIF를 등록해주세요', canvas.width / 2, canvas.height / 2);
       }
 
       // 2. 디카 LCD 비네팅
@@ -660,7 +669,7 @@
         if (key === 'quote') renderTopQuotePill();
       });
 
-      // 4. 최상단: 텍스트 겹침이 완벽히 해결된 레트로 디카 HUD 오버레이
+      // 4. 레트로 디카 HUD 오버레이
       renderDigicamHUD(prog);
 
       // 드래그 가이드 점선
@@ -676,7 +685,6 @@
       }
     }
 
-    // 디카 LCD 비네팅
     function renderDigicamVignette() {
       ctx.save();
       const vignette = ctx.createRadialGradient(
@@ -690,19 +698,15 @@
       ctx.restore();
     }
 
-    // ★ 텍스트와 외곽 틀의 겹침을 완벽히 해결한 정돈된 뷰파인더 HUD 렌더러
     function renderDigicamHUD(prog) {
       ctx.save();
       ctx.strokeStyle = hudColor;
       ctx.fillStyle = hudColor;
 
-      // -------------------------------------------------------------
-      // [1] 상단 OSD 텍스트 바 (y = 26px 위치: 프레임 틀과 전혀 닿지 않음)
-      // -------------------------------------------------------------
+      // [1] 상단 OSD 텍스트 바
       ctx.font = 'bold 12px monospace, monospace';
       ctx.textAlign = 'left';
 
-      // 좌측: ● REC / STBY
       if (isRecOn) {
         const isBlink = Math.sin(prog * Math.PI * 4) > 0;
         if (isBlink) {
@@ -718,17 +722,14 @@
         ctx.fillText('STBY', 40, 26);
       }
 
-      // 상단 타임코드
       ctx.fillStyle = hudColor;
       ctx.font = '11px monospace';
       ctx.fillText('TC 00:18:24', 96, 26);
 
-      // 우측: RAW 60FPS ISO 400 + 배터리 잔량 아이콘
       ctx.textAlign = 'right';
       ctx.font = '11px monospace';
       ctx.fillText('RAW  60FPS  ISO 400', 880, 26);
 
-      // 배터리 아이콘
       const batX = 892, batY = 16, batW = 24, batH = 12;
       ctx.lineWidth = 1.2;
       ctx.strokeRect(batX, batY, batW, batH);
@@ -736,10 +737,7 @@
       ctx.fillRect(batX + 3, batY + 2.5, 5.5, 7);
       ctx.fillRect(batX + 10.5, batY + 2.5, 5.5, 7);
 
-      // -------------------------------------------------------------
-      // [2] 모서리 4개 코너 브래킷 (┌ ┐ └ ┘)
-      //     - 상단 틀 Y는 48px, 하단 틀 Y는 492px로 텍스트와 22px 이상 간격 유지!
-      // -------------------------------------------------------------
+      // [2] 모서리 4개 코너 브래킷 (텍스트와 22px 이상 완벽 분리)
       if (isBracketOn) {
         const bLeft = 40;
         const bRight = 920;
@@ -749,43 +747,35 @@
 
         ctx.lineWidth = 1.5;
 
-        // 좌상단 ┌
         ctx.beginPath();
         ctx.moveTo(bLeft, bTop + bLen); ctx.lineTo(bLeft, bTop); ctx.lineTo(bLeft + bLen, bTop);
         ctx.stroke();
 
-        // 우상단 ┐
         ctx.beginPath();
         ctx.moveTo(bRight - bLen, bTop); ctx.lineTo(bRight, bTop); ctx.lineTo(bRight, bTop + bLen);
         ctx.stroke();
 
-        // 좌하단 └
         ctx.beginPath();
         ctx.moveTo(bLeft, bBottom - bLen); ctx.lineTo(bLeft, bBottom); ctx.lineTo(bLeft + bLen, bBottom);
         ctx.stroke();
 
-        // 우하단 ┘
         ctx.beginPath();
         ctx.moveTo(bRight - bLen, bBottom); ctx.lineTo(bRight, bBottom); ctx.lineTo(bRight, bBottom - bLen);
         ctx.stroke();
       }
 
-      // -------------------------------------------------------------
-      // [3] 하단 OSD 텍스트 바 (y = 518px 위치: 브래킷 틀 아래 완벽 분리)
-      // -------------------------------------------------------------
+      // [3] 하단 OSD 텍스트 바
       const dateVal = hudDateInput.value.trim() || hudDateInput.placeholder;
       const timeVal = hudTimeInput.value.trim() || hudTimeInput.placeholder;
       ctx.textAlign = 'left';
       ctx.font = 'bold 11.5px monospace';
       ctx.fillText(`${dateVal}  ${timeVal}`, 40, 518);
 
-      // 중앙 미니멀 크레딧 (디카 HUD의 일부처럼 자연스럽게)
       ctx.textAlign = 'center';
       ctx.font = '9.5px monospace';
       ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
       ctx.fillText('· dopa digicam kit ·', canvas.width / 2, 518);
 
-      // 우측 셔터 & 줌
       const zoomVal = hudZoomInput.value.trim() || hudZoomInput.placeholder;
       const shutterVal = hudShutterInput.value.trim() || hudShutterInput.placeholder;
       ctx.fillStyle = hudColor;
@@ -796,7 +786,6 @@
       ctx.restore();
     }
 
-    // AF 오토포커스 포커스 박스 [   ]
     function renderFocusBox(prog) {
       const it = elements.afBox;
       ctx.save();
@@ -833,7 +822,6 @@
       ctx.restore();
     }
 
-    // 인용 대사 캡슐
     function renderTopQuotePill() {
       const it = elements.quote;
       const text = quoteText.value.trim() || quoteText.placeholder.replace('예: ', '');
@@ -862,7 +850,6 @@
       ctx.restore();
     }
 
-    // 메신저 대화창
     function renderGlassChatWindow(prog) {
       const it = elements.chat;
       const name = senderName.value.trim() || senderName.placeholder.replace('예: ', '');
@@ -901,7 +888,6 @@
       ctx.stroke();
       ctx.restore();
 
-      // 헤더 바
       ctx.save();
       const hx = it.x + 18, hy = it.y + 14, hw = it.w - 36, hh = 30;
       drawRoundRect(ctx, hx, hy, hw, hh, 15);
@@ -920,7 +906,6 @@
       ctx.textAlign = 'center';
       ctx.fillText(name, hx + hw / 2 + 5, hy + 19);
 
-      // 순차 타이핑 모션
       const total = bubbleLayouts.length;
       const revealWindow = 0.65;
       const stepDuration = revealWindow / total;
@@ -984,7 +969,6 @@
         }
       });
 
-      // 하단 입력바
       const ix = it.x + 14, iy = it.y + it.h - 38, iw = it.w - 28, ih = 26;
       drawRoundRect(ctx, ix, iy, iw, ih, 13);
       ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
@@ -999,7 +983,6 @@
       ctx.restore();
     }
 
-    // 미니 뮤직 플레이어
     function renderFloatingMusicPlayer(prog) {
       const it = elements.player;
       const title = songTitle.value.trim() || songTitle.placeholder.replace('예: ', '');
