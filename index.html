@@ -3,129 +3,129 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>움짤 페어틀 메이커</title>
+  <title>와이드 감성 움짤 페어틀 메이커</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- gifshot (100% 클라이언트 GIF 인코더) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gifshot/0.3.2/gifshot.min.js"></script>
-  <!-- 감성 서체 Pretendard -->
+  <!-- Pretendard 감성 폰트 -->
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
   <style>
     body { font-family: "Pretendard", -apple-system, BlinkMacSystemFont, sans-serif; -webkit-tap-highlight-color: transparent; }
-    /* 모바일 스크롤바 정리 */
     ::-webkit-scrollbar { width: 4px; height: 4px; }
     ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
   </style>
 </head>
-<body class="bg-[#09090b] text-zinc-100 min-h-screen pb-12">
+<body class="bg-[#09090b] text-zinc-100 min-h-screen pb-16">
 
-  <!-- 미니멀 감성 네비게이션 -->
+  <!-- 미니멀 헤더 -->
   <header class="border-b border-zinc-800/80 px-4 py-3 bg-[#09090b]/80 backdrop-blur sticky top-0 z-30 flex items-center justify-between">
     <div class="flex items-center space-x-2">
-      <span class="text-xs font-semibold tracking-wider text-zinc-400 uppercase">Pair Gif Maker</span>
-      <span class="text-[10px] text-zinc-500 border border-zinc-800 px-1.5 py-0.5 rounded">beta</span>
+      <span class="text-xs font-semibold tracking-wider text-zinc-300 uppercase">16:9 Pair Gif Studio</span>
+      <span class="text-[10px] text-zinc-500 border border-zinc-800 px-1.5 py-0.5 rounded">1920×1080</span>
     </div>
-    <span class="text-xs text-zinc-500 font-mono">100% client-side</span>
+    <span class="text-xs text-zinc-500 font-mono">무료 배포용</span>
   </header>
 
-  <main class="max-w-xl mx-auto px-4 pt-4 space-y-5">
+  <main class="max-w-xl mx-auto px-4 pt-4 space-y-4">
 
-    <!-- 1. 캔버스 프리뷰 카드 (정방형 3:4 감성 비율) -->
-    <div class="relative bg-zinc-950 rounded-2xl p-2 border border-zinc-800 shadow-2xl flex flex-col items-center">
-      <canvas id="previewCanvas" width="540" height="700" class="w-full max-w-[320px] aspect-[540/700] rounded-xl bg-black shadow-inner"></canvas>
+    <!-- 1. 16:9 와이드 실시간 캔버스 프리뷰 -->
+    <div class="bg-zinc-950 rounded-2xl p-2.5 border border-zinc-800 shadow-2xl flex flex-col items-center">
+      <!-- 16:9 비율 유지 (960 x 540) -->
+      <canvas id="previewCanvas" width="960" height="540" class="w-full aspect-[16/9] rounded-xl bg-black shadow-inner"></canvas>
       
-      <div class="w-full px-2 pt-2 flex items-center justify-between text-[11px] text-zinc-500">
+      <div class="w-full px-1.5 pt-2 flex items-center justify-between text-[11px] text-zinc-500">
         <span class="flex items-center gap-1.5">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-          실시간 미리보기
+          실시간 렌더링 (16:9 시네마틱)
         </span>
-        <span class="text-zinc-600 font-mono">540×700</span>
+        <span class="text-zinc-600 font-mono">960×540 (1080p Scale)</span>
       </div>
     </div>
 
-    <!-- 2. 다운로드 및 GIF 변환 버튼 -->
+    <!-- 2. GIF 생성 버튼 & 프로그레스 -->
     <div class="space-y-2">
-      <button id="btnGenerate" class="w-full py-3.5 bg-zinc-100 hover:bg-white text-zinc-950 font-bold rounded-xl text-sm transition-all shadow-md active:scale-[0.99] flex items-center justify-center space-x-2">
-        <span id="btnIcon">✨</span>
-        <span id="btnText">움짤(GIF) 내보내기</span>
+      <button id="btnGenerate" class="w-full py-3.5 bg-gradient-to-r from-zinc-100 to-zinc-200 hover:from-white hover:to-zinc-100 text-zinc-950 font-bold rounded-xl text-sm transition-all shadow-md active:scale-[0.99] flex items-center justify-center space-x-2">
+        <span>🎬 16:9 감성 움짤(GIF) 내보내기</span>
       </button>
 
-      <!-- 인코딩 프로그레스 -->
+      <!-- 인코딩 진행바 -->
       <div id="loadingStatus" class="hidden space-y-1.5 py-2">
         <div class="w-full bg-zinc-800 h-1.5 rounded-full overflow-hidden">
-          <div id="progressBar" class="bg-indigo-500 h-full w-0 transition-all duration-200"></div>
+          <div id="progressBar" class="bg-teal-400 h-full w-0 transition-all duration-200"></div>
         </div>
         <p id="statusMsg" class="text-center text-[11px] text-zinc-400 font-mono">프레임 추출 중...</p>
       </div>
 
-      <!-- 완성 결과물 노출 -->
+      <!-- 완성 결과물 -->
       <div id="resultArea" class="hidden flex flex-col items-center space-y-3 p-3 bg-zinc-900/90 rounded-xl border border-zinc-800">
-        <img id="resultGif" class="w-full max-w-[220px] rounded-lg shadow-xl" alt="결과 GIF">
+        <img id="resultGif" class="w-full rounded-lg shadow-xl aspect-[16/9] object-cover" alt="완성된 움짤">
         <div class="flex w-full gap-2">
-          <a id="btnDownload" download="pair_aesthetic.gif" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-center font-semibold rounded-lg text-xs transition">
+          <a id="btnDownload" download="aesthetic_pair_16x9.gif" class="flex-1 py-2.5 bg-teal-600 hover:bg-teal-500 text-center font-semibold rounded-lg text-xs transition">
             💾 갤러리에 저장하기
           </a>
-          <button id="btnShareX" class="py-2.5 px-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-semibold rounded-lg text-xs transition flex items-center gap-1">
+          <button id="btnShareX" class="py-2.5 px-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-semibold rounded-lg text-xs transition flex items-center gap-1.5">
             𝕏 트윗
           </button>
         </div>
       </div>
     </div>
 
-    <!-- 3. 모바일 최적화 탭 컨트롤러 -->
+    <!-- 3. 모바일 탭 제어판 -->
     <div class="bg-zinc-900/80 rounded-2xl border border-zinc-800/80 overflow-hidden">
       <!-- 탭 바 -->
       <div class="grid grid-cols-3 border-b border-zinc-800 text-xs font-medium text-center">
-        <button id="tabBtn1" class="tab-btn py-3 border-b-2 border-indigo-500 text-white font-semibold transition" data-tab="tab1">🖼️ 이미지</button>
+        <button id="tabBtn1" class="tab-btn py-3 border-b-2 border-teal-400 text-white font-semibold transition" data-tab="tab1">🖼️ 이미지</button>
         <button id="tabBtn2" class="tab-btn py-3 border-b-2 border-transparent text-zinc-400 hover:text-zinc-200 transition" data-tab="tab2">✍️ 대사·텍스트</button>
-        <button id="tabBtn3" class="tab-btn py-3 border-b-2 border-transparent text-zinc-400 hover:text-zinc-200 transition" data-tab="tab3">🎨 테마 색상</button>
+        <button id="tabBtn3" class="tab-btn py-3 border-b-2 border-transparent text-zinc-400 hover:text-zinc-200 transition" data-tab="tab3">🎨 감성 테마색</button>
       </div>
 
       <div class="p-4 space-y-4">
         
-        <!-- [탭 1] 이미지 업로드 -->
+        <!-- [탭 1] 이미지 등록 -->
         <div id="tab1" class="tab-content space-y-3">
           <div>
-            <label class="block text-xs font-medium text-zinc-300 mb-1.5">메인 배경 일러스트</label>
+            <label class="block text-xs font-medium text-zinc-300 mb-1.5">메인 일러스트 (전체 배경)</label>
             <input type="file" id="bgInput" accept="image/*" class="w-full text-xs text-zinc-400 file:mr-2.5 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-zinc-800 file:text-zinc-200 hover:file:bg-zinc-700 cursor-pointer">
           </div>
           <div>
-            <label class="block text-xs font-medium text-zinc-300 mb-1.5">아이폰 배경 (선택 / 비우면 메인 이미지 적용)</label>
+            <label class="block text-xs font-medium text-zinc-300 mb-1.5">스마트폰 속 이미지 (선택 / 비우면 메인 이미지 자동 적용)</label>
             <input type="file" id="phoneInput" accept="image/*" class="w-full text-xs text-zinc-400 file:mr-2.5 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-zinc-800 file:text-zinc-200 hover:file:bg-zinc-700 cursor-pointer">
           </div>
         </div>
 
-        <!-- [탭 2] 텍스트 & 대사 입력 -->
+        <!-- [탭 2] 텍스트 & 대사 커스텀 -->
         <div id="tab2" class="tab-content hidden space-y-3">
           <div>
-            <label class="text-[11px] text-zinc-400">상단 인용 대사</label>
-            <input type="text" id="quoteText" value="오늘도 내 곁에 있어 줄 거죠?" class="w-full mt-1 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-zinc-500">
+            <label class="text-[11px] text-zinc-400">상단 인용 대사 캡슐</label>
+            <input type="text" id="quoteText" value="슈베, 많이 보고 싶었어요. 오늘은 내 곁에 있어 줄 거죠?" class="w-full mt-1 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-zinc-500">
           </div>
 
           <div class="grid grid-cols-2 gap-2">
             <div>
-              <label class="text-[11px] text-zinc-400">잠금화면 시간</label>
-              <input type="text" id="phoneTime" value="08:24" class="w-full mt-1 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-zinc-500">
+              <label class="text-[11px] text-zinc-400">페어 이름 (메신저 헤더)</label>
+              <input type="text" id="senderName" value="마인에이스 미스타별" class="w-full mt-1 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-zinc-500">
             </div>
             <div>
-              <label class="text-[11px] text-zinc-400">발신자(페어 이름)</label>
-              <input type="text" id="senderName" value="마인에이스" class="w-full mt-1 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-zinc-500">
+              <label class="text-[11px] text-zinc-400">아이폰 시간</label>
+              <input type="text" id="phoneTime" value="08:24" class="w-full mt-1 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-zinc-500">
             </div>
           </div>
 
-          <div>
-            <label class="text-[11px] text-zinc-400">알림 메시지 1</label>
-            <input type="text" id="msg1" value="기어들어온 기분이 어때?" class="w-full mt-1 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-zinc-500">
-          </div>
-
-          <div>
-            <label class="text-[11px] text-zinc-400">알림 메시지 2</label>
-            <input type="text" id="msg2" value="네가 없으면 안 돼." class="w-full mt-1 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-zinc-500">
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="text-[11px] text-zinc-400">메신저 받은 말 (왼쪽)</label>
+              <input type="text" id="chatMsg1" value="내가 잘못했어요. 뒤돌아봐요..." class="w-full mt-1 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-zinc-500">
+            </div>
+            <div>
+              <label class="text-[11px] text-zinc-400">메신저 보낸 말 (오른쪽)</label>
+              <input type="text" id="chatMsg2" value="네가 없으면 안 돼." class="w-full mt-1 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-zinc-500">
+            </div>
           </div>
 
           <div class="grid grid-cols-2 gap-2 pt-1 border-t border-zinc-800">
             <div>
-              <label class="text-[11px] text-zinc-400">음악 제목</label>
+              <label class="text-[11px] text-zinc-400">플레이어 곡명</label>
               <input type="text" id="songTitle" value="Mystery of Love" class="w-full mt-1 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-zinc-500">
             </div>
             <div>
@@ -135,72 +135,72 @@
           </div>
         </div>
 
-        <!-- [탭 3] 테마 색상 팔레트 -->
+        <!-- [탭 3] 감성 테마 컬러 팔레트 -->
         <div id="tab3" class="tab-content hidden space-y-3">
-          <label class="block text-xs font-medium text-zinc-400">포인트 테마 색상 선택</label>
+          <label class="block text-xs font-medium text-zinc-400">레퍼런스 감성 테마 색상</label>
           <div class="flex items-center gap-2.5 flex-wrap">
-            <button class="color-btn w-8 h-8 rounded-full bg-[#ff2a85] ring-2 ring-white ring-offset-2 ring-offset-zinc-900 transition" data-color="#ff2a85" title="도파 핑크"></button>
-            <button class="color-btn w-8 h-8 rounded-full bg-[#8b5cf6] transition" data-color="#8b5cf6" title="라벤더 퍼플"></button>
+            <button class="color-btn w-8 h-8 rounded-full bg-[#5eead4] ring-2 ring-white ring-offset-2 ring-offset-zinc-900 transition" data-color="#5eead4" title="세이지 민트 (레퍼런스)"></button>
+            <button class="color-btn w-8 h-8 rounded-full bg-[#ff2a85] transition" data-color="#ff2a85" title="도파 핑크"></button>
+            <button class="color-btn w-8 h-8 rounded-full bg-[#c084fc] transition" data-color="#c084fc" title="라벤더 퍼플"></button>
             <button class="color-btn w-8 h-8 rounded-full bg-[#38bdf8] transition" data-color="#38bdf8" title="세레니티 블루"></button>
-            <button class="color-btn w-8 h-8 rounded-full bg-[#34d399] transition" data-color="#34d399" title="소프트 민트"></button>
+            <button class="color-btn w-8 h-8 rounded-full bg-[#fcd34d] transition" data-color="#fcd34d" title="소프트 레몬"></button>
             <button class="color-btn w-8 h-8 rounded-full bg-[#e4e4e7] transition" data-color="#e4e4e7" title="모노 화이트"></button>
             
-            <div class="flex items-center gap-1.5 ml-2 pl-2 border-l border-zinc-800">
-              <input type="color" id="nativeColorPicker" value="#ff2a85" class="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-0">
-              <span id="hexDisplay" class="text-xs font-mono text-zinc-400">#ff2a85</span>
+            <div class="flex items-center gap-1.5 ml-1 pl-2 border-l border-zinc-800">
+              <input type="color" id="nativeColorPicker" value="#5eead4" class="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-0">
+              <span id="hexDisplay" class="text-xs font-mono text-zinc-400">#5eead4</span>
             </div>
           </div>
           <p class="text-[11px] text-zinc-500 pt-1">
-            재생 프로그레스 바, 알림 배지, 반짝이 이펙트의 포인트 색상으로 적용됩니다.
+            상단 인용구, 메신저 말풍선, 음악 재생바, 별빛에 은은한 틴트로 적용됩니다.
           </p>
         </div>
 
       </div>
     </div>
 
-    <!-- 미니멀 크레딧 (자연스러운 스텔스 브랜딩) -->
+    <!-- 미니멀 크레딧 (스텔스 브랜딩) -->
     <footer class="text-center pt-2">
       <a href="https://your-dopa-url.com" target="_blank" class="inline-flex items-center gap-1.5 text-[11px] text-zinc-500 hover:text-zinc-300 transition">
-        <span>crafted for lovers & creators</span>
+        <span>aesthetic pair kit</span>
         <span>·</span>
-        <span class="font-medium underline underline-offset-2">dopa studio</span>
+        <span class="font-medium underline underline-offset-2">dopa</span>
       </a>
     </footer>
 
   </main>
 
   <script>
-    // 캔버스 초기화
+    // 캔버스 초기화 (16:9 와이드 비율: 960 x 540)
     const canvas = document.getElementById('previewCanvas');
     const ctx = canvas.getContext('2d');
 
-    // 이미지 및 테마 상태
     let bgImg = null;
     let phoneImg = null;
     let animProgress = 0;
-    let themeColor = '#ff2a85';
+    let themeColor = '#5eead4'; // 레퍼런스 민트 틴트
 
-    // 폼 참조
+    // DOM 참조
     const bgInput = document.getElementById('bgInput');
     const phoneInput = document.getElementById('phoneInput');
     const quoteText = document.getElementById('quoteText');
-    const phoneTime = document.getElementById('phoneTime');
     const senderName = document.getElementById('senderName');
-    const msg1 = document.getElementById('msg1');
-    const msg2 = document.getElementById('msg2');
+    const phoneTime = document.getElementById('phoneTime');
+    const chatMsg1 = document.getElementById('chatMsg1');
+    const chatMsg2 = document.getElementById('chatMsg2');
     const songTitle = document.getElementById('songTitle');
     const artistName = document.getElementById('artistName');
     const nativeColorPicker = document.getElementById('nativeColorPicker');
     const hexDisplay = document.getElementById('hexDisplay');
 
-    // 탭 전환 처리
+    // 탭 전환
     document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.tab-btn').forEach(b => {
-          b.classList.remove('border-indigo-500', 'text-white');
+          b.classList.remove('border-teal-400', 'text-white');
           b.classList.add('border-transparent', 'text-zinc-400');
         });
-        btn.classList.add('border-indigo-500', 'text-white');
+        btn.classList.add('border-teal-400', 'text-white');
         btn.classList.remove('border-transparent', 'text-zinc-400');
 
         document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
@@ -226,8 +226,8 @@
       draw();
     });
 
-    // 이미지 파일 로더
-    function bindImageUpload(inputEl, callback) {
+    // 이미지 업로드
+    function bindImage(inputEl, callback) {
       inputEl.addEventListener('change', () => {
         if (inputEl.files && inputEl.files[0]) {
           const reader = new FileReader();
@@ -240,15 +240,15 @@
         }
       });
     }
-    bindImageUpload(bgInput, (img) => bgImg = img);
-    bindImageUpload(phoneInput, (img) => phoneImg = img);
+    bindImage(bgInput, (img) => bgImg = img);
+    bindImage(phoneInput, (img) => phoneImg = img);
 
-    [quoteText, phoneTime, senderName, msg1, msg2, songTitle, artistName].forEach(el => {
+    [quoteText, senderName, phoneTime, chatMsg1, chatMsg2, songTitle, artistName].forEach(el => {
       el.addEventListener('input', () => draw());
     });
 
-    // 에러 없는 캔버스 둥근 사각형 유틸
-    function drawRoundRect(c, x, y, w, h, r) {
+    // 둥근 사각형 유틸
+    function roundRect(c, x, y, w, h, r) {
       c.beginPath();
       c.moveTo(x + r, y);
       c.arcTo(x + w, y, x + w, y + h, r);
@@ -258,216 +258,300 @@
       c.closePath();
     }
 
-    // 메인 드로잉 함수
+    // ================= 16:9 와이드 메인 렌더링 =================
     function draw(prog = animProgress) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // 1. 배경 이미지 렌더링
+      // 1. 메인 일러스트 배경 (전체 와이드 커버)
       if (bgImg) {
         const scale = Math.max(canvas.width / bgImg.width, canvas.height / bgImg.height);
         const w = bgImg.width * scale;
         const h = bgImg.height * scale;
         ctx.drawImage(bgImg, (canvas.width - w) / 2, (canvas.height - h) / 2, w, h);
       } else {
-        // 일러스트 없을 때 기본 감성 다크 그라데이션
         const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-        grad.addColorStop(0, '#1c1917');
-        grad.addColorStop(0.5, '#0f172a');
+        grad.addColorStop(0, '#1c1924');
+        grad.addColorStop(0.6, '#0f172a');
         grad.addColorStop(1, '#020617');
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        ctx.fillStyle = '#71717a';
-        ctx.font = '13px Pretendard';
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '15px Pretendard';
         ctx.textAlign = 'center';
-        ctx.fillText('이미지 탭에서 일러스트를 등록해주세요', canvas.width / 2, 260);
+        ctx.fillText('이미지 탭에서 페어 일러스트를 등록해주세요', 300, 270);
       }
 
-      // 비네팅 톤 다운 (가독성 향상)
-      ctx.fillStyle = 'rgba(9, 9, 11, 0.4)';
+      // 우측 위젯 가독성을 위한 부드러운 그라데이션 비네팅
+      const rightVignette = ctx.createLinearGradient(300, 0, canvas.width, 0);
+      rightVignette.addColorStop(0, 'rgba(10, 12, 18, 0.05)');
+      rightVignette.addColorStop(0.5, 'rgba(10, 12, 18, 0.35)');
+      rightVignette.addColorStop(1, 'rgba(10, 12, 18, 0.65)');
+      ctx.fillStyle = rightVignette;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // 2. 글리터 반짝임 루프 (십자 별빛)
-      renderGlitter(prog);
+      // 2. 글리터 별빛 애니메이션 (루프)
+      renderGlitterStars(prog);
 
-      // 3. 상단 대사 인용 카드
-      renderQuoteCard();
+      // 3. 상단 감성 인용구 캡슐 (레퍼런스 민트 톤 필)
+      renderTopQuotePill();
 
-      // 4. 좌측 미니 뮤직 플레이어 위젯
-      renderMusicPlayer(prog);
+      // 4. 중앙 글래스모피즘 메신저 창 (레퍼런스 대화창)
+      renderGlassChatWindow();
 
-      // 5. 우측 아이폰 잠금화면 목업
-      renderIPhoneMockup(prog);
+      // 5. 중앙-우측 미니 뮤직 플레이어 (살짝 겹쳐져 깊이감을 줌)
+      renderFloatingMusicPlayer(prog);
+
+      // 6. 우측 아이폰 16 Pro 목업
+      renderIPhone16(prog);
+
+      // 7. 좌측 하단 미니멀 도파 워터마크
+      ctx.save();
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+      ctx.font = '10px monospace';
+      ctx.textAlign = 'left';
+      ctx.fillText('dopa pair kit · 16:9', 24, canvas.height - 18);
+      ctx.restore();
     }
 
-    // 십자 글리터 별빛 렌더러
-    const glitterCoords = [
-      { x: 50, y: 180, s: 7, p: 0.1 },
-      { x: 230, y: 70, s: 9, p: 0.4 },
-      { x: 70, y: 530, s: 8, p: 0.7 },
-      { x: 270, y: 640, s: 6, p: 0.25 },
-      { x: 190, y: 440, s: 7, p: 0.85 }
+    // 십자 반짝이 별빛
+    const sparkles = [
+      { x: 90, y: 140, s: 7, p: 0.1 },
+      { x: 330, y: 80, s: 9, p: 0.4 },
+      { x: 140, y: 440, s: 8, p: 0.7 },
+      { x: 420, y: 500, s: 6, p: 0.25 },
+      { x: 640, y: 490, s: 7, p: 0.85 }
     ];
-    function renderGlitter(prog) {
-      glitterCoords.forEach(item => {
-        const alpha = Math.sin((prog + item.p) * Math.PI * 2) * 0.45 + 0.55;
+    function renderGlitterStars(prog) {
+      sparkles.forEach(st => {
+        const alpha = Math.sin((prog + st.p) * Math.PI * 2) * 0.45 + 0.55;
         ctx.save();
-        ctx.strokeStyle = '#ffffff';
         ctx.fillStyle = themeColor;
+        ctx.strokeStyle = '#ffffff';
         ctx.globalAlpha = alpha;
 
-        // 중심 원
         ctx.beginPath();
-        ctx.arc(item.x, item.y, item.s * 0.35, 0, Math.PI * 2);
+        ctx.arc(st.x, st.y, st.s * 0.35, 0, Math.PI * 2);
         ctx.fill();
 
-        // 십자 빛
         ctx.lineWidth = 1.4;
         ctx.beginPath();
-        ctx.moveTo(item.x - item.s * 1.6, item.y); ctx.lineTo(item.x + item.s * 1.6, item.y);
-        ctx.moveTo(item.x, item.y - item.s * 1.6); ctx.lineTo(item.x, item.y + item.s * 1.6);
+        ctx.moveTo(st.x - st.s * 1.7, st.y); ctx.lineTo(st.x + st.s * 1.7, st.y);
+        ctx.moveTo(st.x, st.y - st.s * 1.7); ctx.lineTo(st.x, st.y + st.s * 1.7);
         ctx.stroke();
         ctx.restore();
       });
     }
 
-    // 상단 대사 인용 카드
-    function renderQuoteCard() {
+    // 상단 감성 인용구 캡슐 (레퍼런스 상단 필)
+    function renderTopQuotePill() {
       const text = quoteText.value.trim();
       if (!text) return;
-      const qx = 35, qy = 50, qw = 260, qh = 42;
+      const qx = 360, qy = 35, qw = 220, qh = 32;
 
       ctx.save();
-      drawRoundRect(ctx, qx, qy, qw, qh, 21);
-      ctx.fillStyle = 'rgba(18, 18, 23, 0.75)';
+      roundRect(ctx, qx, qy, qw, qh, 16);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
       ctx.fill();
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-      ctx.lineWidth = 1;
+      ctx.strokeStyle = themeColor;
+      ctx.lineWidth = 1.2;
+      ctx.shadowColor = themeColor;
+      ctx.shadowBlur = 10;
       ctx.stroke();
 
-      // 인용 부호
-      ctx.fillStyle = themeColor;
-      ctx.font = 'bold 15px Pretendard';
-      ctx.textAlign = 'left';
-      ctx.fillText('“', qx + 14, qy + 26);
-
-      // 대사 텍스트
-      ctx.fillStyle = '#f4f4f5';
-      ctx.font = '500 11.5px Pretendard';
-      ctx.fillText(text.length > 17 ? text.slice(0, 17) + '...' : text, qx + 30, qy + 26);
+      ctx.fillStyle = '#0f172a';
+      ctx.font = 'bold 10px Pretendard';
+      ctx.textAlign = 'center';
+      ctx.fillText(text.length > 20 ? text.slice(0, 20) + '...' : text, qx + qw / 2, qy + 20);
       ctx.restore();
     }
 
-    // 미니 뮤직 플레이어 위젯 (Apple Music 감성)
-    function renderMusicPlayer(prog) {
-      const mx = 35, my = 290, mw = 220, mh = 98;
+    // 중앙 글래스모피즘 메신저 창 (레퍼런스 투명 대화창 완벽 재현)
+    function renderGlassChatWindow() {
+      const cx = 350, cy = 110, cw = 250, ch = 380, r = 22;
 
       ctx.save();
-      // 글래스모피즘 베이스
-      drawRoundRect(ctx, mx, my, mw, mh, 16);
-      ctx.fillStyle = 'rgba(15, 15, 20, 0.85)';
+      // 글래스 카드 그림자
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.25)';
+      ctx.shadowBlur = 24;
+      ctx.shadowOffsetY = 10;
+
+      // 반투명 화이트 글래스 본체
+      roundRect(ctx, cx, cy, cw, ch, r);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.72)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.restore();
+
+      // 헤더 바 (상대방 이름 캡슐)
+      ctx.save();
+      const hx = cx + 25, hy = cy + 16, hw = cw - 50, hh = 28;
+      roundRect(ctx, hx, hy, hw, hh, 14);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+      ctx.stroke();
+
+      // 헤더 아바타 미니 원
+      ctx.beginPath();
+      ctx.arc(hx + 16, hy + hh / 2, 9, 0, Math.PI * 2);
+      ctx.fillStyle = themeColor;
+      ctx.fill();
+
+      // 페어 이름
+      ctx.fillStyle = '#1e293b';
+      ctx.font = 'bold 10.5px Pretendard';
+      ctx.textAlign = 'center';
+      ctx.fillText(senderName.value, hx + hw / 2 + 5, hy + 18);
+
+      // 말풍선 1 (상대방 - 왼쪽)
+      const b1x = cx + 16, b1y = cy + 65, b1w = 170, b1h = 42;
+      roundRect(ctx, b1x, b1y, b1w, b1h, 12);
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+      ctx.fillStyle = '#334155';
+      ctx.font = '10px Pretendard';
+      ctx.textAlign = 'left';
+      ctx.fillText(chatMsg1.value.length > 15 ? chatMsg1.value.slice(0, 15) + '...' : chatMsg1.value, b1x + 12, b1y + 25);
+
+      // 말풍선 2 (나 - 오른쪽, 테마 컬러 틴트)
+      const b2x = cx + cw - 180, b2y = cy + 120, b2w = 164, b2h = 38;
+      roundRect(ctx, b2x, b2y, b2w, b2h, 12);
+      ctx.fillStyle = themeColor;
+      ctx.fill();
+      ctx.fillStyle = '#0f172a';
+      ctx.font = 'bold 10px Pretendard';
+      ctx.fillText(chatMsg2.value.length > 14 ? chatMsg2.value.slice(0, 14) + '...' : chatMsg2.value, b2x + 12, b2y + 23);
+
+      // 하단 메시지 입력 바 목업
+      const ix = cx + 14, iy = cy + ch - 44, iw = cw - 28, ih = 30;
+      roundRect(ctx, ix, iy, iw, ih, 15);
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '12px sans-serif';
+      ctx.fillText('+', ix + 12, iy + 20);
+      ctx.font = '9.5px Pretendard';
+      ctx.fillText('메시지 보내기...', ix + 30, iy + 19);
+      ctx.fillText('📷', ix + iw - 22, iy + 19);
+
+      ctx.restore();
+    }
+
+    // 중앙-우측 플로팅 뮤직 플레이어 위젯 (깊이감 연출)
+    function renderFloatingMusicPlayer(prog) {
+      const mx = 485, my = 85, mw = 215, mh = 86;
+
+      ctx.save();
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.45)';
+      ctx.shadowBlur = 24;
+      ctx.shadowOffsetY = 10;
+
+      // 다크 글래스모피즘
+      roundRect(ctx, mx, my, mw, mh, 16);
+      ctx.fillStyle = 'rgba(15, 17, 24, 0.88)';
       ctx.fill();
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
       ctx.lineWidth = 1;
       ctx.stroke();
 
-      // 앨범 커버
-      drawRoundRect(ctx, mx + 12, my + 14, 42, 42, 8);
-      ctx.fillStyle = '#27272a';
+      // 앨범 아트
+      roundRect(ctx, mx + 12, my + 12, 38, 38, 8);
+      ctx.fillStyle = '#334155';
       ctx.fill();
       if (bgImg) {
         ctx.save();
-        drawRoundRect(ctx, mx + 12, my + 14, 42, 42, 8);
+        roundRect(ctx, mx + 12, my + 12, 38, 38, 8);
         ctx.clip();
-        ctx.drawImage(bgImg, mx + 12, my + 14, 42, 42);
+        ctx.drawImage(bgImg, mx + 12, my + 12, 38, 38);
         ctx.restore();
       }
 
-      // 곡 정보
+      // 곡명 및 아티스트
       ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 12px Pretendard';
+      ctx.font = 'bold 11.5px Pretendard';
       ctx.textAlign = 'left';
-      const title = songTitle.value;
-      ctx.fillText(title.length > 12 ? title.slice(0, 12) + '..' : title, mx + 64, my + 30);
+      ctx.fillText(songTitle.value.length > 13 ? songTitle.value.slice(0, 13) + '..' : songTitle.value, mx + 58, my + 26);
 
-      ctx.fillStyle = '#a1a1aa';
-      ctx.font = '10.5px Pretendard';
-      const artist = artistName.value;
-      ctx.fillText(artist.length > 13 ? artist.slice(0, 13) + '..' : artist, mx + 64, my + 46);
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '10px Pretendard';
+      ctx.fillText(artistName.value.length > 15 ? artistName.value.slice(0, 15) + '..' : artistName.value, mx + 58, my + 42);
 
-      // 움직이는 재생 프로그레스 바
-      const bx = mx + 14, by = my + 72, bw = mw - 28;
+      // 컨트롤러 버튼 기호 (⏮ ▶ ⏭)
+      ctx.fillStyle = '#e2e8f0';
+      ctx.font = '9px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('⏮', mx + 80, my + 64);
+      ctx.fillText('▶', mx + 110, my + 64);
+      ctx.fillText('⏭', mx + 140, my + 64);
+
+      // 재생 프로그레스 바
+      const bx = mx + 12, by = my + 76, bw = mw - 24;
       ctx.beginPath();
       ctx.moveTo(bx, by); ctx.lineTo(bx + bw, by);
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-      ctx.lineWidth = 3.5;
+      ctx.lineWidth = 3;
       ctx.lineCap = 'round';
       ctx.stroke();
 
-      // 현재 진행 바 (부드러운 전진 루프)
-      const currentFill = bw * (0.3 + prog * 0.4);
+      const curW = bw * (0.3 + prog * 0.4);
       ctx.beginPath();
-      ctx.moveTo(bx, by); ctx.lineTo(bx + currentFill, by);
+      ctx.moveTo(bx, by); ctx.lineTo(bx + curW, by);
       ctx.strokeStyle = themeColor;
-      ctx.lineWidth = 3.5;
+      ctx.lineWidth = 3;
       ctx.lineCap = 'round';
       ctx.stroke();
 
-      // 헤드 핀
       ctx.beginPath();
-      ctx.arc(bx + currentFill, by, 4, 0, Math.PI * 2);
+      ctx.arc(bx + curW, by, 3.5, 0, Math.PI * 2);
       ctx.fillStyle = '#ffffff';
       ctx.fill();
-
-      // 우측 하단 미니멀 워터마크 (스텔스 브랜딩)
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
-      ctx.font = '9px monospace';
-      ctx.textAlign = 'right';
-      ctx.fillText('dopa', mx + mw - 14, my + 88);
 
       ctx.restore();
     }
 
-    // 아이폰 잠금화면 목업
-    function renderIPhoneMockup(prog) {
-      const px = 275, py = 105, pw = 230, ph = 480, r = 36;
+    // 우측 아이폰 16 Pro 목업
+    function renderIPhone16(prog) {
+      const px = 675, py = 45, pw = 232, ph = 460, r = 36;
 
       ctx.save();
-      // 스마트폰 그림자
+      // 스마트폰 입체 그림자
       ctx.shadowColor = 'rgba(0, 0, 0, 0.55)';
-      ctx.shadowBlur = 20;
-      ctx.shadowOffsetX = 4;
-      ctx.shadowOffsetY = 10;
+      ctx.shadowBlur = 28;
+      ctx.shadowOffsetX = 8;
+      ctx.shadowOffsetY = 15;
 
-      // 외곽 프레임
-      drawRoundRect(ctx, px, py, pw, ph, r);
-      ctx.fillStyle = '#09090b';
+      // 폰 외곽 베젤
+      roundRect(ctx, px, py, pw, ph, r);
+      ctx.fillStyle = '#090a0f';
       ctx.fill();
       ctx.lineWidth = 3;
-      ctx.strokeStyle = '#27272a';
+      ctx.strokeStyle = '#2d3345';
       ctx.stroke();
       ctx.restore();
 
-      // 스크린 클리핑 영역
+      // 화면 내부 클리핑
       ctx.save();
-      drawRoundRect(ctx, px + 5, py + 5, pw - 10, ph - 10, r - 4);
+      roundRect(ctx, px + 5, py + 5, pw - 10, ph - 10, r - 4);
       ctx.clip();
 
-      // 폰 내부 배경 일러스트
+      // 폰 속 배경 일러스트 (포커스 줌)
       const targetPhoneImg = phoneImg || bgImg;
       if (targetPhoneImg) {
         const s = Math.max((pw - 10) / targetPhoneImg.width, (ph - 10) / targetPhoneImg.height);
         const iw = targetPhoneImg.width * s, ih = targetPhoneImg.height * s;
         ctx.drawImage(targetPhoneImg, px + 5 + (pw - 10 - iw) / 2, py + 5 + (ph - 10 - ih) / 2, iw, ih);
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+        ctx.fillStyle = 'rgba(10, 12, 18, 0.25)';
         ctx.fillRect(px + 5, py + 5, pw - 10, ph - 10);
       } else {
-        ctx.fillStyle = '#18181b';
+        ctx.fillStyle = '#1e1b4b';
         ctx.fillRect(px + 5, py + 5, pw - 10, ph - 10);
       }
 
       // 다이내믹 아일랜드
-      drawRoundRect(ctx, px + pw / 2 - 32, py + 14, 64, 18, 9);
+      roundRect(ctx, px + pw / 2 - 32, py + 14, 64, 16, 8);
       ctx.fillStyle = '#000000';
       ctx.fill();
 
@@ -475,61 +559,42 @@
       const colon = prog < 0.5 ? ':' : ' ';
       const timeVal = phoneTime.value.includes(':') ? phoneTime.value.replace(':', colon) : phoneTime.value;
       ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 36px Pretendard';
+      ctx.font = 'bold 34px Pretendard';
       ctx.textAlign = 'center';
-      ctx.fillText(timeVal, px + pw / 2, py + 98);
+      ctx.fillText(timeVal, px + pw / 2, py + 92);
 
-      // 알림 메시지 카드 1 & 2
-      renderNotiBubble(px + 12, py + 130, pw - 24, 48, senderName.value, msg1.value);
-      renderNotiBubble(px + 12, py + 186, pw - 24, 48, senderName.value, msg2.value);
-
-      ctx.restore();
-    }
-
-    // 알림 메시지 카드
-    function renderNotiBubble(x, y, w, h, name, message) {
-      ctx.save();
-      drawRoundRect(ctx, x, y, w, h, 14);
-      ctx.fillStyle = 'rgba(24, 24, 27, 0.82)';
+      // 레퍼런스 스타일: 아이폰 하단 미니 뮤직 플레이어 알림 바
+      const ipX = px + 14, ipY = py + ph - 64, ipW = pw - 28, ipH = 42;
+      roundRect(ctx, ipX, ipY, ipW, ipH, 12);
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.82)';
       ctx.fill();
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
-      ctx.lineWidth = 1;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
       ctx.stroke();
 
-      // 프로필 아바타 원형
-      ctx.beginPath();
-      ctx.arc(x + 20, y + h / 2, 12, 0, Math.PI * 2);
-      ctx.fillStyle = themeColor;
-      ctx.fill();
-
-      // 아바타 내부 미니멀 아이콘
       ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 9px Pretendard';
-      ctx.textAlign = 'center';
-      ctx.fillText('♥', x + 20, y + h / 2 + 3);
-
-      // 발신자 이름
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 11px Pretendard';
+      ctx.font = 'bold 10px Pretendard';
       ctx.textAlign = 'left';
-      ctx.fillText(name, x + 40, y + 20);
+      ctx.fillText(songTitle.value.length > 11 ? songTitle.value.slice(0, 11) + '..' : songTitle.value, ipX + 12, ipY + 20);
 
-      // 메시지 내용
-      ctx.fillStyle = '#d4d4d8';
-      ctx.font = '10px Pretendard';
-      ctx.fillText(message.length > 12 ? message.slice(0, 12) + '...' : message, x + 40, y + 36);
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '8.5px Pretendard';
+      ctx.fillText(artistName.value.length > 13 ? artistName.value.slice(0, 13) + '..' : artistName.value, ipX + 12, ipY + 32);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '11px sans-serif';
+      ctx.fillText('▶', ipX + ipW - 20, ipY + 25);
 
       ctx.restore();
     }
 
-    // 15fps 부드러운 미리보기 루프
+    // 15fps 실시간 프리뷰 루프
     draw(0);
     setInterval(() => {
       animProgress = (animProgress + 0.05) % 1;
       draw(animProgress);
     }, 100);
 
-    // ================= GIF 생성 및 저장 로직 =================
+    // ================= 16:9 와이드 GIF 인코딩 =================
     const btnGenerate = document.getElementById('btnGenerate');
     const loadingStatus = document.getElementById('loadingStatus');
     const progressBar = document.getElementById('progressBar');
@@ -544,9 +609,9 @@
       loadingStatus.classList.remove('hidden');
       resultArea.classList.add('hidden');
       progressBar.style.width = '15%';
-      statusMsg.textContent = '프레임 캡처 중...';
+      statusMsg.textContent = '10개 프레임 캡처 중...';
 
-      // 가벼운 10프레임 루프 (모바일 브라우저 최적화)
+      // 10프레임 추출
       const frames = [];
       const totalFrames = 10;
       for (let i = 0; i < totalFrames; i++) {
@@ -555,12 +620,13 @@
       }
 
       progressBar.style.width = '45%';
-      statusMsg.textContent = 'GIF 인코딩 중...';
+      statusMsg.textContent = '16:9 와이드 GIF 인코딩 중...';
 
+      // 800 x 450 (16:9 비율 유지, 모바일 메모리 튕김 원천 방지)
       gifshot.createGIF({
         images: frames,
-        gifWidth: 400,
-        gifHeight: 518,
+        gifWidth: 800,
+        gifHeight: 450,
         interval: 0.12,
         numWorkers: 2
       }, function(obj) {
@@ -578,10 +644,10 @@
       });
     });
 
-    // 트위터 공유 (과한 홍보 없이 자연스러운 해시태그)
+    // 트위터 공유
     btnShareX.addEventListener('click', () => {
       const url = window.location.href;
-      const text = encodeURIComponent(`움짤 페어틀 메이커로 만든 우리 페어 ✨\n#페어틀 #움짤페어틀 #자캐 #드림\n`);
+      const text = encodeURIComponent(`16:9 와이드 감성 움짤 페어틀 메이커 ✨\n#움짤페어틀 #페어틀 #자캐 #드림\n`);
       window.open(`https://twitter.com/intent/tweet?text=${text}&url=${encodeURIComponent(url)}`, '_blank');
     });
   </script>
