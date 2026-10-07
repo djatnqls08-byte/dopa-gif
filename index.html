@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>16:9 와이드 감성 움짤 페어틀 메이커</title>
+  <title>16:9 감성 움짤 페어틀 메이커 (고화질)</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- gifshot (클라이언트 GIF 인코더) -->
@@ -12,7 +12,6 @@
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
   <style>
     body { font-family: "Pretendard", -apple-system, BlinkMacSystemFont, sans-serif; -webkit-tap-highlight-color: transparent; }
-    /* 드래그 시 모바일 화면 스크롤 방지 */
     #previewCanvas { touch-action: none; cursor: grab; }
     #previewCanvas:active { cursor: grabbing; }
     ::-webkit-scrollbar { width: 4px; height: 4px; }
@@ -25,9 +24,9 @@
   <header class="border-b border-zinc-800/80 px-4 py-3 bg-[#09090b]/80 backdrop-blur sticky top-0 z-30 flex items-center justify-between">
     <div class="flex items-center space-x-2">
       <span class="text-xs font-semibold tracking-wider text-zinc-300 uppercase">16:9 Pair Gif Studio</span>
-      <span class="text-[10px] text-zinc-500 border border-zinc-800 px-1.5 py-0.5 rounded">드래그 지원</span>
+      <span class="text-[10px] text-teal-400 bg-teal-500/10 border border-teal-500/30 px-1.5 py-0.5 rounded font-mono">HD MODE</span>
     </div>
-    <span class="text-xs text-zinc-500 font-mono">1920×1080 (16:9)</span>
+    <span class="text-xs text-zinc-500 font-mono">드래그 & 고화질</span>
   </header>
 
   <main class="max-w-xl mx-auto px-4 pt-4 space-y-4">
@@ -37,35 +36,62 @@
       <div class="w-full flex items-center justify-between pb-2 px-1 text-[11px] text-zinc-400">
         <span class="flex items-center gap-1.5">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-          💡 <b>화면의 폰/대화창/플레이어를 직접 터치해서 끌어보세요!</b>
+          💡 <b>폰·대화창·플레이어를 터치해서 드래그해보세요!</b>
         </span>
         <button id="btnResetPositions" class="text-zinc-500 hover:text-zinc-300 text-[10px] underline">위치 초기화</button>
       </div>
 
-      <!-- 16:9 캔버스 (960 x 540) -->
+      <!-- 16:9 캔버스 (기본 960 x 540) -->
       <canvas id="previewCanvas" width="960" height="540" class="w-full aspect-[16/9] rounded-xl bg-black shadow-inner"></canvas>
     </div>
 
-    <!-- 2. GIF 생성 버튼 -->
-    <div class="space-y-2">
-      <button id="btnGenerate" class="w-full py-3.5 bg-gradient-to-r from-zinc-100 to-zinc-200 hover:from-white hover:to-zinc-100 text-zinc-950 font-bold rounded-xl text-sm transition-all shadow-md active:scale-[0.99] flex items-center justify-center space-x-2">
-        <span>🎬 16:9 감성 움짤(GIF) 내보내기</span>
-      </button>
+    <!-- 2. 고화질 출력 설정 & 생성 버튼 -->
+    <div class="space-y-3 bg-zinc-900/60 p-3.5 rounded-xl border border-zinc-800">
+      
+      <!-- 화질 및 포맷 선택 옵션 -->
+      <div class="flex items-center justify-between text-xs pb-1">
+        <span class="text-zinc-400 font-medium">내보내기 해상도</span>
+        <div class="flex items-center gap-2">
+          <label class="flex items-center gap-1 cursor-pointer">
+            <input type="radio" name="resMode" value="960" checked class="accent-teal-400">
+            <span class="text-zinc-300 text-[11px]">960p (빠름)</span>
+          </label>
+          <label class="flex items-center gap-1 cursor-pointer">
+            <input type="radio" name="resMode" value="1280" class="accent-teal-400">
+            <span class="text-zinc-300 text-[11px]">1280p (고화질)</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- 내보내기 버튼 2종 (초고화질 MP4 vs 고화질 GIF) -->
+      <div class="grid grid-cols-2 gap-2">
+        <button id="btnGenerateMP4" class="py-3 bg-gradient-to-r from-teal-500 to-emerald-600 hover:opacity-95 text-white font-bold rounded-xl text-xs transition-all shadow-md active:scale-[0.99] flex items-center justify-center space-x-1.5">
+          <span>✨ 무손실 MP4 저장</span>
+        </button>
+        <button id="btnGenerateGIF" class="py-3 bg-zinc-100 hover:bg-white text-zinc-950 font-bold rounded-xl text-xs transition-all shadow-md active:scale-[0.99] flex items-center justify-center space-x-1.5">
+          <span>🎬 고화질 GIF 내보내기</span>
+        </button>
+      </div>
+      <p class="text-[10px] text-zinc-500 text-center">
+        💡 트위터 업로드 시 <b>[무손실 MP4]</b>가 깨짐·자글거림 전혀 없이 무한루프 움짤로 재생됩니다.
+      </p>
 
       <!-- 인코딩 진행률 바 -->
-      <div id="loadingStatus" class="hidden space-y-1.5 py-2">
+      <div id="loadingStatus" class="hidden space-y-1.5 py-1">
         <div class="w-full bg-zinc-800 h-1.5 rounded-full overflow-hidden">
           <div id="progressBar" class="bg-teal-400 h-full w-0 transition-all duration-200"></div>
         </div>
-        <p id="statusMsg" class="text-center text-[11px] text-zinc-400 font-mono">프레임 추출 중...</p>
+        <p id="statusMsg" class="text-center text-[11px] text-zinc-400 font-mono">고화질 렌더링 중...</p>
       </div>
 
       <!-- 완성 결과물 -->
-      <div id="resultArea" class="hidden flex flex-col items-center space-y-3 p-3 bg-zinc-900/90 rounded-xl border border-zinc-800">
-        <img id="resultGif" class="w-full rounded-lg shadow-xl aspect-[16/9] object-cover" alt="완성된 움짤">
+      <div id="resultArea" class="hidden flex flex-col items-center space-y-3 pt-2">
+        <div id="previewMediaWrapper" class="w-full max-w-[320px] rounded-lg overflow-hidden border border-zinc-700 shadow-xl aspect-[16/9]">
+          <!-- img 또는 video가 동적으로 들어감 -->
+        </div>
         <div class="flex w-full gap-2">
-          <a id="btnDownload" download="aesthetic_pair_16x9.gif" class="flex-1 py-2.5 bg-teal-600 hover:bg-teal-500 text-center font-semibold rounded-lg text-xs transition">
-            💾 갤러리에 저장하기
+          <a id="btnDownload" download="aesthetic_pair_16x9" class="flex-1 py-2.5 bg-teal-600 hover:bg-teal-500 text-center font-semibold rounded-lg text-xs transition">
+            💾 기기에 저장하기
           </a>
           <button id="btnShareX" class="py-2.5 px-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-semibold rounded-lg text-xs transition flex items-center gap-1.5">
             𝕏 트윗
@@ -100,14 +126,14 @@
         <!-- [탭 2] 대사 & 동적 말풍선 관리 -->
         <div id="tab2" class="tab-content hidden space-y-4">
           <div>
-            <label class="text-[11px] text-zinc-400">상단 인용 대사 캡슐</label>
-            <input type="text" id="quoteText" value="슈베, 많이 보고 싶었어요. 오늘은 내 곁에 있어 줄 거죠?" class="w-full mt-1 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-zinc-500">
+            <label class="text-[11px] text-zinc-400">인용 대사 캡슐</label>
+            <input type="text" id="quoteText" value="도파미너, 오랜만입니다." class="w-full mt-1 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-zinc-500">
           </div>
 
           <div class="grid grid-cols-2 gap-2">
             <div>
               <label class="text-[11px] text-zinc-400">페어 이름 (메신저 상단)</label>
-              <input type="text" id="senderName" value="마인에이스 미스타별" class="w-full mt-1 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-zinc-500">
+              <input type="text" id="senderName" value="도파" class="w-full mt-1 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-zinc-500">
             </div>
             <div>
               <label class="text-[11px] text-zinc-400">아이폰 시계</label>
@@ -123,20 +149,18 @@
                 + 말풍선 추가
               </button>
             </div>
-            <div id="bubblesContainer" class="space-y-2 max-h-48 overflow-y-auto pr-1">
-              <!-- JS로 동적 렌더링 -->
-            </div>
+            <div id="bubblesContainer" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
           </div>
 
           <!-- 음악 플레이어 정보 -->
           <div class="grid grid-cols-2 gap-2 pt-2 border-t border-zinc-800">
             <div>
               <label class="text-[11px] text-zinc-400">곡명</label>
-              <input type="text" id="songTitle" value="Mystery of Love" class="w-full mt-1 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-zinc-500">
+              <input type="text" id="songTitle" value="I Don't Think.." class="w-full mt-1 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-zinc-500">
             </div>
             <div>
               <label class="text-[11px] text-zinc-400">가수 / 테마</label>
-              <input type="text" id="artistName" value="Sufjan Stevens" class="w-full mt-1 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-zinc-500">
+              <input type="text" id="artistName" value="Charlie Puth" class="w-full mt-1 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-zinc-500">
             </div>
           </div>
         </div>
@@ -145,16 +169,16 @@
         <div id="tab3" class="tab-content hidden space-y-3">
           <label class="block text-xs font-medium text-zinc-400">포인트 테마 색상</label>
           <div class="flex items-center gap-2.5 flex-wrap">
-            <button class="color-btn w-8 h-8 rounded-full bg-[#5eead4] ring-2 ring-white ring-offset-2 ring-offset-zinc-900 transition" data-color="#5eead4" title="세이지 민트"></button>
+            <button class="color-btn w-8 h-8 rounded-full bg-[#f59e0b] ring-2 ring-white ring-offset-2 ring-offset-zinc-900 transition" data-color="#f59e0b" title="앰버 옐로우"></button>
+            <button class="color-btn w-8 h-8 rounded-full bg-[#5eead4] transition" data-color="#5eead4" title="세이지 민트"></button>
             <button class="color-btn w-8 h-8 rounded-full bg-[#ff2a85] transition" data-color="#ff2a85" title="도파 핑크"></button>
             <button class="color-btn w-8 h-8 rounded-full bg-[#c084fc] transition" data-color="#c084fc" title="라벤더 퍼플"></button>
             <button class="color-btn w-8 h-8 rounded-full bg-[#38bdf8] transition" data-color="#38bdf8" title="세레니티 블루"></button>
-            <button class="color-btn w-8 h-8 rounded-full bg-[#fcd34d] transition" data-color="#fcd34d" title="소프트 레몬"></button>
             <button class="color-btn w-8 h-8 rounded-full bg-[#e4e4e7] transition" data-color="#e4e4e7" title="모노 화이트"></button>
             
             <div class="flex items-center gap-1.5 ml-1 pl-2 border-l border-zinc-800">
-              <input type="color" id="nativeColorPicker" value="#5eead4" class="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-0">
-              <span id="hexDisplay" class="text-xs font-mono text-zinc-400">#5eead4</span>
+              <input type="color" id="nativeColorPicker" value="#f59e0b" class="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-0">
+              <span id="hexDisplay" class="text-xs font-mono text-zinc-400">#f59e0b</span>
             </div>
           </div>
         </div>
@@ -177,28 +201,33 @@
     const canvas = document.getElementById('previewCanvas');
     const ctx = canvas.getContext('2d');
 
+    // 고해상도 렌더링 품질 강제 지정
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+
     let bgImg = null;
     let phoneImg = null;
     let animProgress = 0;
-    let themeColor = '#5eead4';
+    let themeColor = '#f59e0b'; // 레퍼런스 이미지 기반 앰버 옐로우
 
-    // ================= 드래그 가능한 요소 상태 =================
+    // 요소 위치 상태
     const defaultElements = {
-      quote:  { id: 'quote',  x: 360, y: 35,  w: 240, h: 32 },
-      chat:   { id: 'chat',   x: 350, y: 95,  w: 250, h: 370 },
-      player: { id: 'player', x: 485, y: 75,  w: 215, h: 86 },
+      quote:  { id: 'quote',  x: 600, y: 340, w: 230, h: 36 },
+      chat:   { id: 'chat',   x: 40,  y: 110, w: 250, h: 360 },
+      player: { id: 'player', x: 200, y: 350, w: 215, h: 86 },
       phone:  { id: 'phone',  x: 675, y: 45,  w: 232, h: 460 }
     };
     let elements = JSON.parse(JSON.stringify(defaultElements));
 
-    // 드래그 상태
     let draggingItem = null;
     let dragOffset = { x: 0, y: 0 };
 
-    // ================= 동적 말풍선 목록 =================
+    // 말풍선 목록
     let chatBubbles = [
-      { side: 'left', text: '내가 잘못했어요. 뒤돌아봐요...' },
-      { side: 'right', text: '네가 없으면 안 돼.' }
+      { side: 'left', text: '반가워요, 도파미너.' },
+      { side: 'right', text: '실장님! 안녕하세요.' },
+      { side: 'left', text: '좋은 아침입니다.' },
+      { side: 'left', text: '훗, 클로즈베타 신청 하실거죠?' }
     ];
 
     // DOM 참조
@@ -215,20 +244,19 @@
     const btnAddBubble = document.getElementById('btnAddBubble');
     const btnResetPositions = document.getElementById('btnResetPositions');
 
-    // 위치 리셋
     btnResetPositions.addEventListener('click', () => {
       elements = JSON.parse(JSON.stringify(defaultElements));
       draw();
     });
 
-    // 말풍선 목록 렌더링 & 바인딩
+    // 말풍선 UI 동적 생성
     function renderBubbleInputs() {
       bubblesContainer.innerHTML = '';
       chatBubbles.forEach((bubble, idx) => {
         const row = document.createElement('div');
         row.className = 'flex items-center gap-1.5 bg-zinc-950 p-1.5 rounded-lg border border-zinc-800 text-xs';
         row.innerHTML = `
-          <button class="toggle-side px-2 py-1 rounded text-[10px] font-bold ${bubble.side === 'left' ? 'bg-zinc-800 text-zinc-300' : 'bg-teal-500/20 text-teal-300'}" data-index="${idx}">
+          <button class="toggle-side px-2 py-1 rounded text-[10px] font-bold ${bubble.side === 'left' ? 'bg-zinc-800 text-zinc-300' : 'bg-amber-500/20 text-amber-300'}" data-index="${idx}">
             ${bubble.side === 'left' ? '← 상대' : '나 →'}
           </button>
           <input type="text" value="${bubble.text}" class="bubble-text flex-1 bg-transparent border-0 text-white text-xs px-1 focus:outline-none" data-index="${idx}">
@@ -237,10 +265,8 @@
         bubblesContainer.appendChild(row);
       });
 
-      // 대화 개수에 맞춰 대화창 높이 자동 조절
       elements.chat.h = Math.max(260, 80 + chatBubbles.length * 48 + 40);
 
-      // 이벤트 바인딩
       document.querySelectorAll('.toggle-side').forEach(btn => {
         btn.addEventListener('click', (e) => {
           const i = e.target.dataset.index;
@@ -259,10 +285,7 @@
 
       document.querySelectorAll('.delete-bubble').forEach(btn => {
         btn.addEventListener('click', (e) => {
-          if (chatBubbles.length <= 1) {
-            alert('최소 1개의 말풍선은 유지되어야 합니다.');
-            return;
-          }
+          if (chatBubbles.length <= 1) return;
           chatBubbles.splice(e.target.dataset.index, 1);
           renderBubbleInputs();
           draw();
@@ -332,7 +355,7 @@
       el.addEventListener('input', () => draw());
     });
 
-    // ================= 마우스 & 터치 드래그 좌표 계산 =================
+    // 마우스/터치 드래그 위치 계산
     function getCanvasCoords(e) {
       const rect = canvas.getBoundingClientRect();
       const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -345,10 +368,8 @@
       };
     }
 
-    // 터치/마우스 시작
     function handleDragStart(e) {
       const pos = getCanvasCoords(e);
-      // z-index 역순 검사 (상단 레이어부터 클릭 판정)
       const order = ['quote', 'player', 'chat', 'phone'];
       for (const key of order) {
         const item = elements[key];
@@ -363,7 +384,6 @@
       }
     }
 
-    // 터치/마우스 이동
     function handleDragMove(e) {
       if (!draggingItem) return;
       const pos = getCanvasCoords(e);
@@ -373,7 +393,6 @@
       draw();
     }
 
-    // 터치/마우스 종료
     function handleDragEnd() {
       draggingItem = null;
     }
@@ -386,396 +405,420 @@
     window.addEventListener('touchmove', handleDragMove, { passive: false });
     window.addEventListener('touchend', handleDragEnd);
 
-    // 둥근 사각형 유틸
     function roundRect(c, x, y, w, h, r) {
       c.beginPath();
       c.moveTo(x + r, y);
       c.arcTo(x + w, y, x + w, y + h, r);
       c.arcTo(x + w, y + h, x, y + h, r);
       c.arcTo(x, y + h, x, y, r);
-      c.arcTo(x, y, x + w, y, r);
+      c.arcTo(x, y + x, y, r);
       c.closePath();
     }
 
-    // ================= 메인 렌더링 =================
-    function draw(prog = animProgress) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // ================= 메인 드로잉 =================
+    function draw(prog = animProgress, targetCtx = ctx, wScale = 1, hScale = 1) {
+      const c = targetCtx;
+      const cvWidth = canvas.width * wScale;
+      const cvHeight = canvas.height * hScale;
+
+      c.save();
+      c.scale(wScale, hScale);
+      c.clearRect(0, 0, canvas.width, canvas.height);
 
       // 1. 전체 배경 일러스트
       if (bgImg) {
         const scale = Math.max(canvas.width / bgImg.width, canvas.height / bgImg.height);
         const w = bgImg.width * scale;
         const h = bgImg.height * scale;
-        ctx.drawImage(bgImg, (canvas.width - w) / 2, (canvas.height - h) / 2, w, h);
+        c.drawImage(bgImg, (canvas.width - w) / 2, (canvas.height - h) / 2, w, h);
       } else {
-        const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+        const grad = c.createLinearGradient(0, 0, canvas.width, canvas.height);
         grad.addColorStop(0, '#1c1924');
         grad.addColorStop(0.6, '#0f172a');
         grad.addColorStop(1, '#020617');
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        c.fillStyle = grad;
+        c.fillRect(0, 0, canvas.width, canvas.height);
 
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = '15px Pretendard';
-        ctx.textAlign = 'center';
-        ctx.fillText('이미지 탭에서 페어 일러스트를 등록해주세요', 300, 270);
+        c.fillStyle = '#94a3b8';
+        c.font = 'bold 15px Pretendard';
+        c.textAlign = 'center';
+        c.fillText('이미지 탭에서 일러스트를 등록해주세요', 300, 270);
       }
 
-      // 우측 가독성 비네팅
-      const rightVignette = ctx.createLinearGradient(200, 0, canvas.width, 0);
+      // 우측 은은한 비네팅
+      const rightVignette = c.createLinearGradient(200, 0, canvas.width, 0);
       rightVignette.addColorStop(0, 'rgba(10, 12, 18, 0.05)');
       rightVignette.addColorStop(0.5, 'rgba(10, 12, 18, 0.35)');
       rightVignette.addColorStop(1, 'rgba(10, 12, 18, 0.65)');
-      ctx.fillStyle = rightVignette;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      c.fillStyle = rightVignette;
+      c.fillRect(0, 0, canvas.width, canvas.height);
 
-      // 2. 글리터 별빛 애니메이션
-      renderGlitterStars(prog);
+      // 2. 글리터 별빛
+      renderGlitterStars(c, prog);
 
-      // 3. 레이어 드로잉 (드래그 위치 반영)
-      renderIPhone16(prog);
-      renderGlassChatWindow();
-      renderFloatingMusicPlayer(prog);
-      renderTopQuotePill();
+      // 3. 레이어 렌더링
+      renderIPhone16(c, prog);
+      renderGlassChatWindow(c);
+      renderFloatingMusicPlayer(c, prog);
+      renderTopQuotePill(c);
 
-      // 드래그 중인 오브젝트 하이라이트 가이드
-      if (draggingItem) {
+      // 드래그 가이드
+      if (draggingItem && targetCtx === ctx) {
         const it = elements[draggingItem];
-        ctx.save();
-        ctx.strokeStyle = themeColor;
-        ctx.lineWidth = 2;
-        ctx.setLineDash([4, 4]);
-        roundRect(ctx, it.x - 3, it.y - 3, it.w + 6, it.h + 6, 8);
-        ctx.stroke();
-        ctx.restore();
+        c.save();
+        c.strokeStyle = themeColor;
+        c.lineWidth = 2;
+        c.setLineDash([4, 4]);
+        roundRect(c, it.x - 3, it.y - 3, it.w + 6, it.h + 6, 8);
+        c.stroke();
+        c.restore();
       }
 
-      // 좌측 하단 미니멀 도파 워터마크
-      ctx.save();
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
-      ctx.font = '10px monospace';
-      ctx.textAlign = 'left';
-      ctx.fillText('dopa pair kit · 16:9', 24, canvas.height - 18);
-      ctx.restore();
+      // 워터마크
+      c.save();
+      c.fillStyle = 'rgba(255, 255, 255, 0.4)';
+      c.font = '10px monospace';
+      c.textAlign = 'left';
+      c.fillText('dopa pair kit · 16:9', 24, canvas.height - 18);
+      c.restore();
+
+      c.restore();
     }
 
     // 십자 반짝이
     const sparkles = [
-      { x: 90, y: 140, s: 7, p: 0.1 },
-      { x: 330, y: 80, s: 9, p: 0.4 },
-      { x: 140, y: 440, s: 8, p: 0.7 },
-      { x: 420, y: 500, s: 6, p: 0.25 },
-      { x: 640, y: 490, s: 7, p: 0.85 }
+      { x: 330, y: 140, s: 8, p: 0.1 },
+      { x: 430, y: 920, s: 7, p: 0.4 },
+      { x: 440, y: 460, s: 8, p: 0.7 },
+      { x: 670, y: 490, s: 7, p: 0.85 }
     ];
-    function renderGlitterStars(prog) {
+    function renderGlitterStars(c, prog) {
       sparkles.forEach(st => {
         const alpha = Math.sin((prog + st.p) * Math.PI * 2) * 0.45 + 0.55;
-        ctx.save();
-        ctx.fillStyle = themeColor;
-        ctx.strokeStyle = '#ffffff';
-        ctx.globalAlpha = alpha;
-        ctx.beginPath();
-        ctx.arc(st.x, st.y, st.s * 0.35, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.lineWidth = 1.4;
-        ctx.beginPath();
-        ctx.moveTo(st.x - st.s * 1.7, st.y); ctx.lineTo(st.x + st.s * 1.7, st.y);
-        ctx.moveTo(st.x, st.y - st.s * 1.7); ctx.lineTo(st.x, st.y + st.s * 1.7);
-        ctx.stroke();
-        ctx.restore();
+        c.save();
+        c.fillStyle = themeColor;
+        c.strokeStyle = '#ffffff';
+        c.globalAlpha = alpha;
+        c.beginPath();
+        c.arc(st.x, st.y, st.s * 0.35, 0, Math.PI * 2);
+        c.fill();
+        c.lineWidth = 1.4;
+        c.beginPath();
+        c.moveTo(st.x - st.s * 1.7, st.y); c.lineTo(st.x + st.s * 1.7, st.y);
+        c.moveTo(st.x, st.y - st.s * 1.7); c.lineTo(st.x, st.y + st.s * 1.7);
+        c.stroke();
+        c.restore();
       });
     }
 
-    // 상단 대사 캡슐
-    function renderTopQuotePill() {
+    // 대사 캡슐
+    function renderTopQuotePill(c) {
       const it = elements.quote;
       const text = quoteText.value.trim();
       if (!text) return;
 
-      ctx.save();
-      roundRect(ctx, it.x, it.y, it.w, it.h, it.h / 2);
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
-      ctx.fill();
-      ctx.strokeStyle = themeColor;
-      ctx.lineWidth = 1.2;
-      ctx.shadowColor = themeColor;
-      ctx.shadowBlur = 8;
-      ctx.stroke();
+      c.save();
+      roundRect(c, it.x, it.y, it.w, it.h, it.h / 2);
+      c.fillStyle = 'rgba(255, 255, 255, 0.5)';
+      c.fill();
+      c.strokeStyle = themeColor;
+      c.lineWidth = 1.4;
+      c.shadowColor = themeColor;
+      c.shadowBlur = 8;
+      c.stroke();
 
-      ctx.fillStyle = '#0f172a';
-      ctx.font = 'bold 10px Pretendard';
-      ctx.textAlign = 'center';
-      ctx.fillText(text.length > 21 ? text.slice(0, 21) + '...' : text, it.x + it.w / 2, it.y + 20);
-      ctx.restore();
+      c.fillStyle = '#0f172a';
+      c.font = 'bold 10.5px Pretendard';
+      c.textAlign = 'center';
+      c.fillText(text.length > 21 ? text.slice(0, 21) + '...' : text, it.x + it.w / 2, it.y + 22);
+      c.restore();
     }
 
-    // 글래스모피즘 메신저 대화창 (동적 말풍선 렌더링)
-    function renderGlassChatWindow() {
+    // 메신저 창
+    function renderGlassChatWindow(c) {
       const it = elements.chat;
 
-      ctx.save();
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.25)';
-      ctx.shadowBlur = 24;
-      ctx.shadowOffsetY = 10;
+      c.save();
+      c.shadowColor = 'rgba(0, 0, 0, 0.3)';
+      c.shadowBlur = 24;
+      c.shadowOffsetY = 10;
 
-      // 글래스 본체
-      roundRect(ctx, it.x, it.y, it.w, it.h, 22);
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.72)';
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-      ctx.restore();
+      roundRect(c, it.x, it.y, it.w, it.h, 22);
+      c.fillStyle = 'rgba(255, 255, 255, 0.78)';
+      c.fill();
+      c.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+      c.lineWidth = 1.5;
+      c.stroke();
+      c.restore();
 
-      // 헤더 바 (상대 이름)
-      ctx.save();
-      const hx = it.x + 25, hy = it.y + 14, hw = it.w - 50, hh = 28;
-      roundRect(ctx, hx, hy, hw, hh, 14);
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-      ctx.stroke();
+      // 헤더 바
+      c.save();
+      const hx = it.x + 20, hy = it.y + 14, hw = it.w - 40, hh = 30;
+      roundRect(c, hx, hy, hw, hh, 15);
+      c.fillStyle = 'rgba(255, 255, 255, 0.65)';
+      c.fill();
+      c.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+      c.stroke();
 
-      ctx.beginPath();
-      ctx.arc(hx + 16, hy + hh / 2, 8, 0, Math.PI * 2);
-      ctx.fillStyle = themeColor;
-      ctx.fill();
+      c.beginPath();
+      c.arc(hx + 16, hy + hh / 2, 8, 0, Math.PI * 2);
+      c.fillStyle = themeColor;
+      c.fill();
 
-      ctx.fillStyle = '#1e293b';
-      ctx.font = 'bold 10.5px Pretendard';
-      ctx.textAlign = 'center';
-      ctx.fillText(senderName.value, hx + hw / 2 + 5, hy + 18);
+      c.fillStyle = '#1e293b';
+      c.font = 'bold 11px Pretendard';
+      c.textAlign = 'center';
+      c.fillText(senderName.value, hx + hw / 2 + 5, hy + 19);
 
-      // 동적 말풍선 목록 렌더링
-      let currentY = it.y + 55;
+      // 말풍선 목록
+      let currentY = it.y + 58;
       chatBubbles.forEach(bubble => {
         const isLeft = bubble.side === 'left';
-        const bw = Math.min(180, it.w - 40);
+        const bw = Math.min(185, it.w - 40);
         const bh = 34;
         const bx = isLeft ? (it.x + 14) : (it.x + it.w - bw - 14);
 
-        roundRect(ctx, bx, currentY, bw, bh, 12);
+        roundRect(c, bx, currentY, bw, bh, 12);
         if (isLeft) {
-          ctx.fillStyle = '#ffffff';
-          ctx.fill();
-          ctx.fillStyle = '#334155';
-          ctx.font = '9.5px Pretendard';
-          ctx.textAlign = 'left';
-          ctx.fillText(bubble.text.length > 15 ? bubble.text.slice(0, 15) + '...' : bubble.text, bx + 10, currentY + 21);
+          c.fillStyle = '#ffffff';
+          c.fill();
+          c.fillStyle = '#334155';
+          c.font = 'bold 9.5px Pretendard';
+          c.textAlign = 'left';
+          c.fillText(bubble.text.length > 15 ? bubble.text.slice(0, 15) + '...' : bubble.text, bx + 10, currentY + 21);
         } else {
-          ctx.fillStyle = themeColor;
-          ctx.fill();
-          ctx.fillStyle = '#0f172a';
-          ctx.font = 'bold 9.5px Pretendard';
-          ctx.textAlign = 'left';
-          ctx.fillText(bubble.text.length > 15 ? bubble.text.slice(0, 15) + '...' : bubble.text, bx + 10, currentY + 21);
+          c.fillStyle = themeColor;
+          c.fill();
+          c.fillStyle = '#0f172a';
+          c.font = 'bold 9.5px Pretendard';
+          c.textAlign = 'left';
+          c.fillText(bubble.text.length > 15 ? bubble.text.slice(0, 15) + '...' : bubble.text, bx + 10, currentY + 21);
         }
         currentY += 42;
       });
 
-      // 하단 입력바 목업
+      // 하단 입력바
       const ix = it.x + 14, iy = it.y + it.h - 38, iw = it.w - 28, ih = 26;
-      roundRect(ctx, ix, iy, iw, ih, 13);
-      ctx.fillStyle = '#ffffff';
-      ctx.fill();
-      ctx.fillStyle = '#94a3b8';
-      ctx.font = '11px sans-serif';
-      ctx.fillText('+', ix + 10, iy + 17);
-      ctx.font = '9px Pretendard';
-      ctx.fillText('메시지 보내기...', ix + 26, iy + 17);
-      ctx.fillText('📷', ix + iw - 18, iy + 17);
+      roundRect(c, ix, iy, iw, ih, 13);
+      c.fillStyle = '#ffffff';
+      c.fill();
+      c.fillStyle = '#94a3b8';
+      c.font = '11px sans-serif';
+      c.fillText('+', ix + 10, iy + 17);
+      c.font = '9px Pretendard';
+      c.fillText('메시지 보내기...', ix + 26, iy + 17);
+      c.fillText('📷', ix + iw - 18, iy + 17);
 
-      ctx.restore();
+      c.restore();
     }
 
-    // 미니 뮤직 플레이어
-    function renderFloatingMusicPlayer(prog) {
+    // 미니 플레이어
+    function renderFloatingMusicPlayer(c, prog) {
       const it = elements.player;
 
-      ctx.save();
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.45)';
-      ctx.shadowBlur = 24;
-      ctx.shadowOffsetY = 10;
+      c.save();
+      c.shadowColor = 'rgba(0, 0, 0, 0.45)';
+      c.shadowBlur = 24;
+      c.shadowOffsetY = 10;
 
-      roundRect(ctx, it.x, it.y, it.w, it.h, 16);
-      ctx.fillStyle = 'rgba(15, 17, 24, 0.88)';
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
-      ctx.lineWidth = 1;
-      ctx.stroke();
+      roundRect(c, it.x, it.y, it.w, it.h, 16);
+      c.fillStyle = 'rgba(15, 17, 24, 0.92)';
+      c.fill();
+      c.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+      c.lineWidth = 1;
+      c.stroke();
 
-      // 앨범 아트
-      roundRect(ctx, it.x + 12, it.y + 12, 38, 38, 8);
-      ctx.fillStyle = '#334155';
-      ctx.fill();
+      roundRect(c, it.x + 12, it.y + 12, 38, 38, 8);
+      c.fillStyle = '#334155';
+      c.fill();
       if (bgImg) {
-        ctx.save();
-        roundRect(ctx, it.x + 12, it.y + 12, 38, 38, 8);
-        ctx.clip();
-        ctx.drawImage(bgImg, it.x + 12, it.y + 12, 38, 38);
-        ctx.restore();
+        c.save();
+        roundRect(c, it.x + 12, it.y + 12, 38, 38, 8);
+        c.clip();
+        c.drawImage(bgImg, it.x + 12, it.y + 12, 38, 38);
+        c.restore();
       }
 
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 11px Pretendard';
-      ctx.textAlign = 'left';
-      ctx.fillText(songTitle.value.length > 12 ? songTitle.value.slice(0, 12) + '..' : songTitle.value, it.x + 58, it.y + 26);
+      c.fillStyle = '#ffffff';
+      c.font = 'bold 11px Pretendard';
+      c.textAlign = 'left';
+      c.fillText(songTitle.value.length > 12 ? songTitle.value.slice(0, 12) + '..' : songTitle.value, it.x + 58, it.y + 26);
 
-      ctx.fillStyle = '#94a3b8';
-      ctx.font = '9.5px Pretendard';
-      ctx.fillText(artistName.value.length > 14 ? artistName.value.slice(0, 14) + '..' : artistName.value, it.x + 58, it.y + 42);
+      c.fillStyle = '#94a3b8';
+      c.font = '9.5px Pretendard';
+      c.fillText(artistName.value.length > 14 ? artistName.value.slice(0, 14) + '..' : artistName.value, it.x + 58, it.y + 42);
 
-      // 컨트롤러
-      ctx.fillStyle = '#e2e8f0';
-      ctx.font = '9px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('⏮', it.x + 80, it.y + 64);
-      ctx.fillText('▶', it.x + 110, it.y + 64);
-      ctx.fillText('⏭', it.x + 140, it.y + 64);
+      c.fillStyle = '#e2e8f0';
+      c.font = '9px sans-serif';
+      c.textAlign = 'center';
+      c.fillText('⏮', it.x + 80, it.y + 64);
+      c.fillText('▶', it.x + 110, it.y + 64);
+      c.fillText('⏭', it.x + 140, it.y + 64);
 
-      // 재생 프로그레스 바
       const bx = it.x + 12, by = it.y + 74, bw = it.w - 24;
-      ctx.beginPath();
-      ctx.moveTo(bx, by); ctx.lineTo(bx + bw, by);
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-      ctx.lineWidth = 3;
-      ctx.lineCap = 'round';
-      ctx.stroke();
+      c.beginPath();
+      c.moveTo(bx, by); c.lineTo(bx + bw, by);
+      c.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+      c.lineWidth = 3;
+      c.lineCap = 'round';
+      c.stroke();
 
       const curW = bw * (0.3 + prog * 0.4);
-      ctx.beginPath();
-      ctx.moveTo(bx, by); ctx.lineTo(bx + curW, by);
-      ctx.strokeStyle = themeColor;
-      ctx.lineWidth = 3;
-      ctx.lineCap = 'round';
-      ctx.stroke();
+      c.beginPath();
+      c.moveTo(bx, by); c.lineTo(bx + curW, by);
+      c.strokeStyle = themeColor;
+      c.lineWidth = 3;
+      c.lineCap = 'round';
+      c.stroke();
 
-      ctx.beginPath();
-      ctx.arc(bx + curW, by, 3.5, 0, Math.PI * 2);
-      ctx.fillStyle = '#ffffff';
-      ctx.fill();
+      c.beginPath();
+      c.arc(bx + curW, by, 3.5, 0, Math.PI * 2);
+      c.fillStyle = '#ffffff';
+      c.fill();
 
-      ctx.restore();
+      c.restore();
     }
 
-    // 아이폰 16 Pro 목업
-    function renderIPhone16(prog) {
+    // 아이폰 목업
+    function renderIPhone16(c, prog) {
       const it = elements.phone;
 
-      ctx.save();
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.55)';
-      ctx.shadowBlur = 28;
-      ctx.shadowOffsetX = 8;
-      ctx.shadowOffsetY = 15;
+      c.save();
+      c.shadowColor = 'rgba(0, 0, 0, 0.55)';
+      c.shadowBlur = 28;
+      c.shadowOffsetX = 8;
+      c.shadowOffsetY = 15;
 
-      roundRect(ctx, it.x, it.y, it.w, it.h, 36);
-      ctx.fillStyle = '#090a0f';
-      ctx.fill();
-      ctx.lineWidth = 3;
-      ctx.strokeStyle = '#2d3345';
-      ctx.stroke();
-      ctx.restore();
+      roundRect(c, it.x, it.y, it.w, it.h, 36);
+      c.fillStyle = '#090a0f';
+      c.fill();
+      c.lineWidth = 3;
+      c.strokeStyle = '#2d3345';
+      c.stroke();
+      c.restore();
 
-      ctx.save();
-      roundRect(ctx, it.x + 5, it.y + 5, it.w - 10, it.h - 10, 32);
-      ctx.clip();
+      c.save();
+      roundRect(c, it.x + 5, it.y + 5, it.w - 10, it.h - 10, 32);
+      c.clip();
 
       const targetImg = phoneImg || bgImg;
       if (targetImg) {
         const s = Math.max((it.w - 10) / targetImg.width, (it.h - 10) / targetImg.height);
         const iw = targetImg.width * s, ih = targetImg.height * s;
-        ctx.drawImage(targetImg, it.x + 5 + (it.w - 10 - iw) / 2, it.y + 5 + (it.h - 10 - ih) / 2, iw, ih);
-        ctx.fillStyle = 'rgba(10, 12, 18, 0.25)';
-        ctx.fillRect(it.x + 5, it.y + 5, it.w - 10, it.h - 10);
+        c.drawImage(targetImg, it.x + 5 + (it.w - 10 - iw) / 2, it.y + 5 + (it.h - 10 - ih) / 2, iw, ih);
+        c.fillStyle = 'rgba(10, 12, 18, 0.25)';
+        c.fillRect(it.x + 5, it.y + 5, it.w - 10, it.h - 10);
       } else {
-        ctx.fillStyle = '#1e1b4b';
-        ctx.fillRect(it.x + 5, it.y + 5, it.w - 10, it.h - 10);
+        c.fillStyle = '#1e1b4b';
+        c.fillRect(it.x + 5, it.y + 5, it.w - 10, it.h - 10);
       }
 
       // 다이내믹 아일랜드
-      roundRect(ctx, it.x + it.w / 2 - 32, it.y + 14, 64, 16, 8);
-      ctx.fillStyle = '#000000';
-      ctx.fill();
+      roundRect(c, it.x + it.w / 2 - 32, it.y + 14, 64, 16, 8);
+      c.fillStyle = '#000000';
+      c.fill();
 
       // 시계
       const colon = prog < 0.5 ? ':' : ' ';
       const timeVal = phoneTime.value.includes(':') ? phoneTime.value.replace(':', colon) : phoneTime.value;
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 34px Pretendard';
-      ctx.textAlign = 'center';
-      ctx.fillText(timeVal, it.x + it.w / 2, it.y + 92);
+      c.fillStyle = '#ffffff';
+      c.font = 'bold 34px Pretendard';
+      c.textAlign = 'center';
+      c.fillText(timeVal, it.x + it.w / 2, it.y + 92);
 
       // 하단 플레이어 미니 바
       const ipX = it.x + 14, ipY = it.y + it.h - 60, ipW = it.w - 28, ipH = 38;
-      roundRect(ctx, ipX, ipY, ipW, ipH, 12);
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.82)';
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-      ctx.stroke();
+      roundRect(c, ipX, ipY, ipW, ipH, 12);
+      c.fillStyle = 'rgba(15, 23, 42, 0.82)';
+      c.fill();
+      c.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+      c.stroke();
 
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 9.5px Pretendard';
-      ctx.textAlign = 'left';
-      ctx.fillText(songTitle.value.length > 11 ? songTitle.value.slice(0, 11) + '..' : songTitle.value, ipX + 10, ipY + 18);
+      c.fillStyle = '#ffffff';
+      c.font = 'bold 9.5px Pretendard';
+      c.textAlign = 'left';
+      c.fillText(songTitle.value.length > 11 ? songTitle.value.slice(0, 11) + '..' : songTitle.value, ipX + 10, ipY + 18);
 
-      ctx.fillStyle = '#94a3b8';
-      ctx.font = '8px Pretendard';
-      ctx.fillText(artistName.value.length > 13 ? artistName.value.slice(0, 13) + '..' : artistName.value, ipX + 10, ipY + 30);
+      c.fillStyle = '#94a3b8';
+      c.font = '8px Pretendard';
+      c.fillText(artistName.value.length > 13 ? artistName.value.slice(0, 13) + '..' : artistName.value, ipX + 10, ipY + 30);
 
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '10px sans-serif';
-      ctx.fillText('▶', ipX + ipW - 18, ipY + 23);
+      c.fillStyle = '#ffffff';
+      c.font = '10px sans-serif';
+      c.fillText('▶', ipX + ipW - 18, ipY + 23);
 
-      ctx.restore();
+      c.restore();
     }
 
-    // 15fps 루프
+    // 15fps 실시간 프리뷰 루프
     draw(0);
     setInterval(() => {
       animProgress = (animProgress + 0.05) % 1;
       draw(animProgress);
     }, 100);
 
-    // ================= GIF 인코딩 =================
-    const btnGenerate = document.getElementById('btnGenerate');
+    // ================= 고화질 내보내기 로직 (GIF & MP4) =================
+    const btnGenerateGIF = document.getElementById('btnGenerateGIF');
+    const btnGenerateMP4 = document.getElementById('btnGenerateMP4');
     const loadingStatus = document.getElementById('loadingStatus');
     const progressBar = document.getElementById('progressBar');
     const statusMsg = document.getElementById('statusMsg');
     const resultArea = document.getElementById('resultArea');
-    const resultGif = document.getElementById('resultGif');
+    const previewMediaWrapper = document.getElementById('previewMediaWrapper');
     const btnDownload = document.getElementById('btnDownload');
     const btnShareX = document.getElementById('btnShareX');
 
-    btnGenerate.addEventListener('click', () => {
-      btnGenerate.disabled = true;
+    function getTargetDimensions() {
+      const mode = document.querySelector('input[name="resMode"]:checked').value;
+      if (mode === '1280') {
+        return { w: 1280, h: 720, scale: 1280 / 960 };
+      }
+      return { w: 960, h: 540, scale: 1 };
+    }
+
+    // 1. 고화질 GIF 생성 (sampleInterval: 1 극강 화질)
+    btnGenerateGIF.addEventListener('click', () => {
+      btnGenerateGIF.disabled = true;
+      btnGenerateMP4.disabled = true;
       loadingStatus.classList.remove('hidden');
       resultArea.classList.add('hidden');
       progressBar.style.width = '15%';
-      statusMsg.textContent = '10개 프레임 캡처 중...';
+      statusMsg.textContent = '고화질 프레임 캡처 중...';
+
+      const dim = getTargetDimensions();
+      const offCanvas = document.createElement('canvas');
+      offCanvas.width = dim.w;
+      offCanvas.height = dim.h;
+      const offCtx = offCanvas.getContext('2d');
+      offCtx.imageSmoothingEnabled = true;
+      offCtx.imageSmoothingQuality = 'high';
 
       const frames = [];
       const totalFrames = 10;
       for (let i = 0; i < totalFrames; i++) {
-        draw(i / totalFrames);
-        frames.push(canvas.toDataURL('image/png'));
+        draw(i / totalFrames, offCtx, dim.scale, dim.scale);
+        frames.push(offCanvas.toDataURL('image/png'));
       }
 
       progressBar.style.width = '45%';
-      statusMsg.textContent = '16:9 와이드 GIF 인코딩 중...';
+      statusMsg.textContent = '색상 최적화 인코딩 중 (잠시만 기다려주세요)...';
 
       gifshot.createGIF({
         images: frames,
-        gifWidth: 800,
-        gifHeight: 450,
+        gifWidth: dim.w,
+        gifHeight: dim.h,
         interval: 0.12,
-        numWorkers: 2
+        sampleInterval: 1, // ★ 노이즈 제거 핵심: 최고 정밀도 색상 추출
+        numWorkers: 4
       }, function(obj) {
-        btnGenerate.disabled = false;
+        btnGenerateGIF.disabled = false;
+        btnGenerateMP4.disabled = false;
         loadingStatus.classList.add('hidden');
 
         if (!obj.error) {
-          resultGif.src = obj.image;
+          previewMediaWrapper.innerHTML = `<img src="${obj.image}" class="w-full h-full object-cover">`;
           btnDownload.href = obj.image;
+          btnDownload.download = `aesthetic_pair_${dim.w}x${dim.h}.gif`;
           resultArea.classList.remove('hidden');
           resultArea.scrollIntoView({ behavior: 'smooth' });
         } else {
@@ -784,10 +827,69 @@
       });
     });
 
+    // 2. 무손실 초고화질 MP4(비디오) 생성 (Canvas 스트림 즉시 녹화)
+    btnGenerateMP4.addEventListener('click', () => {
+      btnGenerateGIF.disabled = true;
+      btnGenerateMP4.disabled = true;
+      loadingStatus.classList.remove('hidden');
+      resultArea.classList.add('hidden');
+      progressBar.style.width = '20%';
+      statusMsg.textContent = '무손실 60fps 비디오 녹화 중...';
+
+      const dim = getTargetDimensions();
+      const offCanvas = document.createElement('canvas');
+      offCanvas.width = dim.w;
+      offCanvas.height = dim.h;
+      const offCtx = offCanvas.getContext('2d');
+      offCtx.imageSmoothingEnabled = true;
+      offCtx.imageSmoothingQuality = 'high';
+
+      const stream = offCanvas.captureStream(60);
+      let recorder;
+      try {
+        recorder = new MediaRecorder(stream, { mimeType: 'video/mp4; codecs="avc1.42E01E"' });
+      } catch (e) {
+        recorder = new MediaRecorder(stream);
+      }
+
+      const chunks = [];
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
+      recorder.onstop = () => {
+        const blob = new Blob(chunks, { type: recorder.mimeType });
+        const videoUrl = URL.createObjectURL(blob);
+
+        previewMediaWrapper.innerHTML = `<video src="${videoUrl}" autoplay loop muted playsinline class="w-full h-full object-cover"></video>`;
+        btnDownload.href = videoUrl;
+        btnDownload.download = `aesthetic_pair_${dim.w}x${dim.h}.mp4`;
+
+        btnGenerateGIF.disabled = false;
+        btnGenerateMP4.disabled = false;
+        loadingStatus.classList.add('hidden');
+        resultArea.classList.remove('hidden');
+        resultArea.scrollIntoView({ behavior: 'smooth' });
+      };
+
+      recorder.start();
+
+      // 1.5초 동안 고화질 루프 렌더링 녹화
+      let currentFrame = 0;
+      const totalSteps = 45; // 45프레임 부드러운 루프
+      const interval = setInterval(() => {
+        draw(currentFrame / totalSteps, offCtx, dim.scale, dim.scale);
+        currentFrame++;
+        progressBar.style.width = `${Math.min(90, Math.round((currentFrame / totalSteps) * 100))}%`;
+
+        if (currentFrame >= totalSteps) {
+          clearInterval(interval);
+          recorder.stop();
+        }
+      }, 33);
+    });
+
     // 트위터 공유
     btnShareX.addEventListener('click', () => {
       const url = window.location.href;
-      const text = encodeURIComponent(`16:9 와이드 감성 움짤 페어틀 메이커 ✨\n#움짤페어틀 #페어틀 #자캐 #드림\n`);
+      const text = encodeURIComponent(`16:9 와이드 감성 페어틀 메이커 ✨\n#움짤페어틀 #페어틀 #자캐 #드림 #도파\n`);
       window.open(`https://twitter.com/intent/tweet?text=${text}&url=${encodeURIComponent(url)}`, '_blank');
     });
   </script>
